@@ -1,0 +1,51 @@
+---
+- hosts: haproxy
+  become: yes
+  vars:
+    datadog_api_key: "{{ dd_key }}"
+    datadog_enabled: "{{ dd_enabled }}"
+    datadog_config:
+      tags: "environment:{{ environment_name }}, role:loadbalancer"
+      hostname: "{{full_hostname}}"
+    datadog_checks:
+      haproxy:
+        init_config:
+        instances:
+        - username: "{{ haproxy_stats_user }}"
+          password: "{{ haproxy_stats_pass }}"
+          url: "https://{{audit_domain}}/haproxy?stats"
+      ssh_check:
+        init_config:
+        instances:
+        - username: "{{ ansible_ssh_user }}"
+          password: "{{ ansible_ssh_pass }}"
+          host: "{{ansible_ssh_host}}"
+
+    resolv_searchpath: "{{ dns_resolv_searchpath }}"
+    resolv_dns_server: "{{ dns_server_list }}"
+    haproxy_frontends:
+      https_ui_front:
+      - bind *:80
+      - bind *:443 ssl crt /etc/ssl/{{audit_domain}}/{{audit_domain}}.pem ca-file /etc/ssl/{{audit_domain}}/{{audit_domain}}_intermediate.crt
+      - mode http
+      - acl http  ssl_fc,not
+      - http-request redirect scheme https if http
+      - default_backend ui_back
+    haproxy_backends:
+      ui_back: "{{ ui_backend_list }}"
+
+  pre_tasks:
+  - name: Upload certificates
+    copy: 
+      src: "artifacts/{{audit_domain}}"
+      dest: "/etc/ssl/"      
+      owner: "{{ansible_ssh_user}}"
+      directory_mode: yes
+      group: sudo
+      mode: 0755
+
+  roles:
+    - { role: Datadog.datadog, become: yes, when: datadog_installed} 
+    - { role: ypsman.resolv } 
+    - { role: SimpliField.haproxy } 
+  

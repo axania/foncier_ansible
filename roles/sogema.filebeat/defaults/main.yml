@@ -1,0 +1,100 @@
+---
+filebeat_create_config: true
+
+filebeat_syslog_prospectors_enabled: "{{ is_syslog_prospector_enabled | default(false) }}"
+filebeat_prospectors_syslog:
+  - 
+    paths:
+      - "{{ system_log_path | default(false) }}"
+    tags: syslog
+    type: log
+
+filebeat_wildfly_prospectors_enabled: "{{ is_wildfly_prospector_enabled | default(false) }}"
+filebeat_prospectors_wildfly:
+  - 
+    paths:
+      - "{{ system_log_path | default(false) }}"
+    tags: syslog
+    type: log
+  -
+    paths:
+        - "{{ wildfly_log_path | default(false) }}"
+    type: log
+    tags: jboss_server_log
+    multiline:
+        pattern: "^[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2}"
+        negate: true
+        match: after
+        max_lines: 5
+        
+filebeat_glassfish_prospectors_enabled: "{{ is_glassfish_prospector_enabled | default(false) }}"
+filebeat_prospectors_glassfish:
+  - 
+    paths:
+      - "{{ system_log_path | default(false) }}"
+    tags: syslog
+    type: log
+  -
+    paths:
+        - "{{ glassfish_log_path | default(false) }}"
+    type: log
+    tags: glassfish_server_logs
+    multiline:
+        pattern: '(?m)\[\#\|%{TIMESTAMP_ISO8601:timestamp}\|%{LOGLEVEL}\|%{DATA:server_version}\|%{JAVACLASS}\|%{DATA:thread}\|\[GLF_INT\]%{DATA:categorie}\|%{DATA:loglevel}\|%{DATA:class}\|line:%{DATA:linenumber}\|%{DATA:message_detail}\|\#\]'
+        negate: true
+        match: after
+        
+filebeat_mongodb_prospectors_enabled: "{{ is_mongodb_prospector_enabled | default(false) }}"
+filebeat_prospectors_mongodb:
+  - 
+    paths:
+      - "{{ system_log_path | default(false) }}"
+    tags: syslog
+    type: log
+  -
+    paths:
+        - "{{ mongodb_log_path | default(false) }}"
+    type: mongo
+    tags: mongodb_log
+
+filebeat_docker_prospectors_enabled: "{{ is_docker_prospector_enabled | default(false) }}"
+filebeat_prospectors_docker:
+  - 
+    type: docker
+    tags: docker_log
+    templates:
+      - condition:
+            contains.docker.container.image: "{{ docker_conatiner_log_name | default(false) }}"
+        config:
+          - type: docker
+            tags: docker_log
+            containers.ids:
+              - "${data.docker.container.id}"
+            multiline.pattern: '\/\d{4}|\d{4}-'
+            multiline.negate: true
+            multiline.match: after
+            multiline.max_lines: 10
+            processors:
+             - add_docker_metadata: ~
+            exclude_lines: ["^\\s+[\\-`('.|_]"]  # drop asciiart lines
+            
+
+filebeat_output_elasticsearch_enabled: false
+filebeat_output_elasticsearch_hosts:
+  - "localhost:9200"
+
+filebeat_output_logstash_enabled: true
+filebeat_output_logstash_hosts:
+  - "{{ logstash_ip_port }}"
+
+filebeat_bulk_max_size: 1024
+  
+filebeat_enable_logging: true
+filebeat_log_level: info
+filebeat_log_dir: /var/log/mybeat
+filebeat_log_filename: mybeat.log
+
+filebeat_ssl_dir: /etc/pki/tls/certs
+filebeat_ssl_certificate_file: ""           # put your certificate file name here if you are using ssl/tls - logstash-forwarder.crt
+filebeat_ssl_key_file: ""                   # put your key file name here if you are using ssl/tls - logstash-forwarder.key
+filebeat_ssl_insecure: "true"

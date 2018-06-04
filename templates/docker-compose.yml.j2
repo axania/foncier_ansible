@@ -1,0 +1,54 @@
+version: '3.3' # specify docker-compose version
+
+
+volumes:
+  postgres:
+
+# Define the services/containers to be run
+services:
+{% if is_datadog_on_docker %}
+  datadog:
+    restart: always
+    image: datadog/docker-dd-agent:12.6.5230-alpine
+    ports:
+      - "8125:8125/udp"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro 
+      - /proc/:/host/proc/:ro 
+      - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro 
+    environment:
+      API_KEY: "{{ dd_key }}"
+      SD_BACKEND: "docker"
+      TAGS: "environment:{{ environment_name }},role:docker"
+      DD_HOSTNAME: "{{ full_hostname }}" 
+{% endif %}  
+
+  foncier_ui:
+    restart: always
+    image: sogema-docker.jfrog.io/sogema/foncier_ui:{{ foncier_ui_image_version }}
+    ports:
+      - "4200:4200"
+    environment:
+      - API_URL=foncier_api:8280
+    depends_on:
+      - foncier_api
+
+  foncier_api:
+    restart: always
+    image: sogema-docker.jfrog.io/sogema/foncier_api:{{ foncier_api_image_version }}
+    ports:
+      - "8280:8280"
+    environment:
+      DB_HOST: "{{ db_host }}"
+      DB_PORT: "{{ db_port }}"
+      DB_USER: "{{ db_user }}"
+      DB_PASS: "{{ db_pass }}"
+      DB_NAME: "{{ db_name }}"
+
+  postgres:
+    image: postgres:9.5
+    restart: always
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"      

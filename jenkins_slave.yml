@@ -1,0 +1,49 @@
+- hosts: jenkins
+  become: yes
+  vars:
+    resolv_searchpath: "{{ dns_resolv_searchpath }}"
+    resolv_dns_server: "{{ dns_server_list }}"
+  tasks: 
+
+  - apt_repository:
+      repo: ppa:ansible/ansible
+      state: present
+    when: is_ansible_installed
+
+  - name: Update APT-GET cache
+    apt: update_cache=yes
+    when: is_ansible_installed
+
+  - name: Installs Ansible
+    apt:
+      name: ansible
+      state: present
+      update_cache: yes      
+    when: is_ansible_installed
+
+  - file:
+      path: /var/jenkins
+      state: directory
+      mode: "u+rwx"
+      group: sudo
+      owner: "{{ansible_ssh_user}}"
+    when: jenkins_slave_node
+
+  - name: Make sure we have a 'jenkins' group
+    group:
+      name: jenkins
+      state: present
+    when: jenkins_slave_node  
+
+  - user:
+      name: "{{ansible_ssh_user}}"
+      group: jenkins
+      append: yes
+    when: jenkins_slave_node  
+    
+  roles:
+    - { role: gantsign.maven }
+    - { role: SimpliField.node, when: node_installed }
+    - { role: geerlingguy.java }
+    - { role: ypsman.resolv } 
+
