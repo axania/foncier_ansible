@@ -1,6 +1,8 @@
 - hosts: jenkins
   become: yes
   vars:
+    nodejs_version: 8.x
+    nodejs_packages_update_cache: yes  
     resolv_searchpath: "{{ dns_resolv_searchpath }}"
     resolv_dns_server: "{{ dns_server_list }}"
   tasks: 
