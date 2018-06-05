@@ -25,7 +25,7 @@ services:
 
   foncier_ui:
     restart: always
-    image: sogema-docker.jfrog.io/sogema/foncier_ui:{{ foncier_ui_image_version }}
+    image: sogema-docker.jfrog.io/sogema/foncier-ui:{{ foncier_ui_image_version }}
     ports:
       - "4200:4200"
     environment:
@@ -35,7 +35,7 @@ services:
 
   foncier_api:
     restart: always
-    image: sogema-docker.jfrog.io/sogema/foncier_api:{{ foncier_api_image_version }}
+    image: sogema-docker.jfrog.io/sogema/foncier-api:{{ foncier_api_image_version }}
     ports:
       - "8280:8280"
     environment:
