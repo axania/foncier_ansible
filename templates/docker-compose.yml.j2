@@ -3,6 +3,7 @@ version: '3.3' # specify docker-compose version
 
 volumes:
   postgres:
+  sonar-data:
 
 # Define the services/containers to be run
 services:
@@ -70,6 +71,8 @@ services:
       SONARQUBE_JDBC_USERNAME: "sonar"
       SONARQUBE_JDBC_PASSWORD: "sonar"
       SONARQUBE_JDBC_URL: "jdbc:postgresql://postgres:5432/sonar"   
+    volumes:
+      - sonar-data:/opt/sonarqube/extensions  
     depends_on: 
       - postgres       
 {% endif %}        
