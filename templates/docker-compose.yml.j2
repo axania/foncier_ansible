@@ -22,7 +22,7 @@ services:
       SD_BACKEND: "docker"
       TAGS: "environment:{{ environment_name }},role:docker"
       DD_HOSTNAME: "{{ full_hostname }}" 
-{% endif %}  
+{% endif %}
 
   foncier_ui:
     restart: always
@@ -31,8 +31,16 @@ services:
       - "4200:4200"
     environment:
       - API_URL=foncier_api:8280
+      - WORKFLOW_URL=foncier_wf:8581
     depends_on:
-      - foncier_api
+      - foncier_api        
+      - foncier_wf
+
+  foncier_wf:
+    restart: always
+    image: camunda/camunda-bpm-platform:{{ foncier_wf_image_version }}
+    ports:
+      - "8581:8080"
 
   foncier_api:
     restart: always
