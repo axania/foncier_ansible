@@ -31,7 +31,7 @@ services:
       - "4200:4200"
     environment:
       - API_URL=foncier_api:8280
-      - WORKFLOW_URL=foncier_wf:8581
+      - WORKFLOW_URL=foncier_wf:8080
     depends_on:
       - foncier_api        
       - foncier_wf
