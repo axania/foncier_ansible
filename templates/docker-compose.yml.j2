@@ -53,6 +53,9 @@ services:
       DB_USER: "{{ db_user }}"
       DB_PASS: "{{ db_pass }}"
       DB_NAME: "{{ db_name }}"
+      CAMUNDA_ENGINEREST_URL: http://foncier_ui:4200/workflowApi/
+    depends_on:
+      - foncier_wf          
 
   postgres:
     image: postgres:10.4-alpine
