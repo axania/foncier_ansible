@@ -60,6 +60,22 @@ services:
       POSTGRES_DB: "{{ db_name }}"    
       PGDATA: /var/lib/postgresql/data/pgdata
 
+
+{% if is_drools_enabled %}   
+  drools:
+    restart: always
+    image: jboss/drools-workbench:7.9.0.Final
+    ports:
+      - "8080:8080"
+      - "8001:8001"
+    environment:
+      DB_HOST: "{{ db_host }}"
+      DB_PORT: "{{ db_port }}"
+      DB_USER: "{{ db_user }}"
+      DB_PASS: "{{ db_pass }}"
+      DB_NAME: "{{ db_name }}"
+{% endif %}        
+
 {% if is_sonar_enabled %}      
   sonarqube:
     image: sonarqube:7.1-alpine
