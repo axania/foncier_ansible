@@ -79,12 +79,6 @@ services:
     ports:
       - "8080:8080"
       - "8001:8001"
-    environment:
-      DB_HOST: "{{ db_host }}"
-      DB_PORT: "{{ db_port }}"
-      DB_USER: "{{ db_user }}"
-      DB_PASS: "{{ db_pass }}"
-      DB_NAME: "{{ db_name }}"
 {% endif %}        
 
 {% if is_sonar_enabled %}      
