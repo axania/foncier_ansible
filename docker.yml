@@ -169,14 +169,23 @@
     tags:
        - deploy
 
+
   - docker_service:
-      project_name: "sonarqube"
+      project_name: "sonar"
+      project_src: /home/{{ansible_ssh_user}}      
+      state: absent
+    tags:
+       - misc
+
+  - docker_service:
+      project_name: "sonar"
       project_src: /home/{{ansible_ssh_user}}      
       state: present
       pull: "{{ pull_images if pull_images else omit }}"
-      services: "sonarqube"
+      services: 
+        - sonarqube
     tags:
-       - deploy
+       - misc
 
 
   roles:
