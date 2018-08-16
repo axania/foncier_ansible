@@ -3,6 +3,7 @@ version: '3.3' # specify docker-compose version
 
 volumes:
   postgres:
+  sonar-postgres:
   sonar-data:
 
 # Define the services/containers to be run
@@ -101,7 +102,7 @@ services:
     image: postgres:10.4-alpine
     restart: always
     volumes:
-      - postgres:/var/lib/postgresql/data
+      - sonar-postgres:/var/lib/postgresql/data
       - ./scripts:/docker-entrypoint-initdb.d
     ports:
       - "5433:5432"      
