@@ -175,7 +175,7 @@
       project_src: /home/{{ansible_ssh_user}}      
       state: absent
     tags:
-       - misc
+       - sonar
 
   - docker_service:
       project_name: "sonar"
@@ -185,7 +185,7 @@
       services: 
         - sonarqube
     tags:
-       - misc
+       - sonar
 
 
   roles:
