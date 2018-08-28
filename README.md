@@ -14,12 +14,12 @@ This repo contains the ansible playbook (scripts) for a complete installation of
 
 ### How to set up ###
 
-Make sure you have Ansible 2.3.2.0 installed. 
+Make sure you have Ansible 2.5 installed. 
 
 ```
 $ sudo apt-get update && sudo apt-get -y upgrade
 $ sudo apt-get install python-pip
-$ sudo pip install 'ansible==2.3.2.0'
+$ sudo pip install 'ansible'
 
 ```
 #### Install Mongo ####
