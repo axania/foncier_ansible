@@ -62,6 +62,14 @@ services:
       EDMS_TEMP_FILE_DIRECTORY: {{ edms_temp_file_directory }}
       EDMS_SHAREPOINT_SITE: {{ edms_sharepoint_site }}
       EDMS_SHAREPOINT_FOLDER: {{ edms_sharepoint_folder }}
+      SPRING_MAIL_HOST: {{ spring_mail_host }}
+      SPRING_MAIL_PORT: {{ spring_mail_port }}
+      SPRING_MAIL_USERNAME: {{ spring_mail_username }}
+      SPRING_MAIL_PASSWORD: {{ spring_mail_password }}
+      SPRING_MAIL_PROTOCOL: {{ spring_mail_protocol }}
+      SPRING_MAIL_DEFAULTENCODING: {{ spring_mail_defaultencoding }}
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: {{ spring_mail_properties_mail_smtp_auth }}
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: {{ spring_mail_properties_mail_smtp_starttls_enable }}
     depends_on:
       - foncier_wf
       - postgres          
