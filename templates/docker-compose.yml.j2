@@ -54,7 +54,7 @@ services:
       DB_USER: "{{ db_user }}"
       DB_PASS: "{{ db_pass }}"
       DB_NAME: "{{ db_name }}"
-      CAMUNDA_ENGINEREST_URL: http://foncier_ui:4200/workflowApi/engine-rest/
+      CAMUNDA_ENGINEREST_URL: {{ test_camunda_enginerest_url }}
       EDMS_USER: {{ edms_user }}
       EDMS_PASSWORD: {{ edms_password }}
       EDMS_DOMAIN: {{ edms_domain }}
@@ -62,6 +62,14 @@ services:
       EDMS_TEMP_FILE_DIRECTORY: {{ edms_temp_file_directory }}
       EDMS_SHAREPOINT_SITE: {{ edms_sharepoint_site }}
       EDMS_SHAREPOINT_FOLDER: {{ edms_sharepoint_folder }}
+      MAIL_HOST: {{ mail_host }}
+      MAIL_PORT: {{ mail_port }}
+      MAIL_USERNAME: {{ mail_username }}
+      MAIL_PASSWORD: {{ mail_password }}
+      MAIL_PROTOCOL: {{ mail_protocol }}
+      MAIL_DEFAULTENCODING: {{ mail_defaultencoding }}
+      MAIL_SMTP_AUTH_ENABLED: {{ mail_smtp_auth_enabled }}
+      MAIL_TLS_ENABLED: {{ mail_tls_enabled }}
     depends_on:
       - foncier_wf
       - postgres          
