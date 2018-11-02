@@ -68,11 +68,11 @@ services:
       MAIL_PASSWORD: {{ mail_password }}
       MAIL_PROTOCOL: {{ mail_protocol }}
       MAIL_DEFAULTENCODING: {{ mail_defaultencoding }}
-      MAIL_SMTP_AUTH_ENABLED: {{ mail_smtp_auth_enabled }}
-      MAIL_TLS_ENABLED: {{ mail_tls_enabled }}
+      MAIL_SMTP_AUTH_ENABLED: '{{ mail_smtp_auth_enabled }}'
+      MAIL_TLS_ENABLED: '{{ mail_tls_enabled }}'
       KEYCLOAK_AUTH_SERVER_URL: {{ keycloak_auth_server_url }}
       KEYCLOAK_REALM: {{ keycloak_realm }}
-      KEYCLOAK_SSL_REQUIRED: {{ keycloak_ssl_required }}
+      KEYCLOAK_SSL_REQUIRED: '{{ keycloak_ssl_required }}'
       KEYCLOAK_API_CLIENT: {{ keycloak_api_client }}
       KEYCLOAK_API_CLIENT_SECRET: {{ keycloak_api_client_secret }}
       KEYCLOAK_API_CLIENT_ROLE: {{ keycloak_api_client_role }}
