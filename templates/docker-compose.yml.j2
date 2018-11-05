@@ -39,7 +39,7 @@ services:
 
   foncier_wf:
     restart: always
-    image: camunda/camunda-bpm-platform:{{ foncier_wf_image_version }}
+    image: sogema-docker.jfrog.io/sogema/foncier_wf:{{ foncier_wf_image_version }}
     ports:
       - "8581:8080"
 
