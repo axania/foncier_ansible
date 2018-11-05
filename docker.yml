@@ -140,7 +140,28 @@
     tags:
        - postgres
        
+  - file:
+      path: "/home/{{ansible_ssh_user}}/keycloak_config"
+      state: directory
+      mode: 0755
+      group: sudo
+      owner: "{{ansible_ssh_user}}"
+    when: is_keycloak_enabled
+    tags:
+       - keycloak
 
+  - name: Upload keycloak file
+    template: 
+      src: ../templates/keycloak.json.j2
+      dest: "/home/{{ansible_ssh_user}}/keycloak_config/keycloak.json"      
+      owner: "{{ansible_ssh_user}}"
+      group: sudo
+      mode: 0755
+    when:   
+      - is_keycloak_enabled 
+    tags:
+       - keycloak
+       
   - name: Upload docker-compose file
     template: 
       src: ../templates/docker-compose.yml.j2
@@ -168,6 +189,9 @@
       services: "{{ available_docker_services }}"
     tags:
        - deploy
+
+
+
 
 
   - docker_service:

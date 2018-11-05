@@ -41,7 +41,9 @@ services:
     restart: always
     image: sogema-docker.jfrog.io/sogema/foncier_wf:{{ foncier_wf_image_version }}
     ports:
-      - "8581:8080"
+      - "8581:8080"      
+    volumes:
+      - ./keycloak_config/keycloak.json:/camunda/webapps/engine-rest/WEB-INF/keycloak.json
 
   foncier_api:
     restart: always
