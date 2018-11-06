@@ -78,6 +78,7 @@ services:
       KEYCLOAK_API_CLIENT: {{ keycloak_api_client }}
       KEYCLOAK_API_CLIENT_SECRET: {{ keycloak_api_client_secret }}
       KEYCLOAK_API_CLIENT_ROLE: {{ keycloak_api_client_role }}
+      KEYCLOAK_UI_CLIENT: {{ keycloak_ui_client }}
     depends_on:
       - foncier_wf
       - postgres          
