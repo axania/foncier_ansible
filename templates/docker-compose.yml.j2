@@ -101,7 +101,7 @@ services:
 {% if is_foncier_rules_api_enabled %}   
   foncier_rules_api:
     restart: always
-    image: sogema-docker.jfrog.io/sogema/foncier-rules-api:{{foncier-rules-api_image_version}}
+    image: sogema-docker.jfrog.io/sogema/foncier-rules-api:{{foncier_rules_api_image_version}}
     ports:
       - "8082:8080"
       - "8001:8001"
