@@ -98,13 +98,23 @@ services:
       PGDATA: /var/lib/postgresql/data/pgdata
 
 
-{% if is_drools_enabled %}   
-  drools:
+{% if is_foncier_rules_api_enabled %}   
+  foncier_rules_api:
     restart: always
-    image: jboss/drools-workbench:7.9.0.Final
+    image: sogema-docker.jfrog.io/sogema/foncier-rules-api:{{foncier-rules-api_image_version}}
     ports:
-      - "8080:8080"
+      - "8082:8080"
       - "8001:8001"
+    volumes:
+      - /data/drools/wb_git:/opt/jboss/wildfly/bin/.niogit
+    #TODO map /usr/share/maven without loosing its content! believe user issue
+    #TODO replace the admin password by loading from environment
+    command: ["sh", "-c", "/opt/jboss/wildfly/bin/add-user.sh -a {{tax_calc_user}} {{tax_calc_pass}} && /opt/jboss/wildfly/bin/start_server.sh"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3    
 {% endif %}        
 
 {% if is_sonar_enabled %}      
