@@ -109,7 +109,7 @@ services:
       - /data/drools/wb_git:/opt/jboss/wildfly/bin/.niogit
     #TODO map /usr/share/maven without loosing its content! believe user issue
     #TODO replace the admin password by loading from environment
-    command: ["sh", "-c", "/opt/jboss/wildfly/bin/add-user.sh -a {{tax_calc_user}} {{tax_calc_pass}} && /opt/jboss/wildfly/bin/start_server.sh"]
+    command: ["sh", "-c", "/opt/jboss/wildfly/bin/add-user.sh -a {{drools_workbench_user}} {{drools_workbench_pass}} && /opt/jboss/wildfly/bin/start_server.sh"]
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080"]
       interval: 1m30s
