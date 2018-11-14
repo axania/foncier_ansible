@@ -106,8 +106,8 @@ services:
     ports:
       - "8082:8080"
       - "8001:8001"
-    volumes:
-      - /data/drools/wb_git:/opt/jboss/wildfly/bin/.niogit
+    #volumes:
+    #  - /data/drools/wb_git:/opt/jboss/wildfly/bin/.niogit
     #TODO map /usr/share/maven without loosing its content! believe user issue
     #TODO replace the admin password by loading from environment
     command: ["sh", "-c", "/opt/jboss/wildfly/bin/add-user.sh -a {{drools_workbench_user}} {{drools_workbench_pass}} && /opt/jboss/wildfly/bin/start_server.sh"]
