@@ -80,6 +80,13 @@ services:
       KEYCLOAK_API_CLIENT_SECRET: {{ keycloak_api_client_secret }}
       KEYCLOAK_API_CLIENT_ROLE: {{ keycloak_api_client_role }}
       KEYCLOAK_UI_CLIENT: {{ keycloak_ui_client }}
+      RULES_BASE_URL:{{rules_base_url}}
+      RULES_DEFAULT_TRAN_TYPE:{{rules_default_tran_type}}
+      RULES_DEFAULT_TRAN_VERSION:{{rules_default_tran_version}}
+      RULES_ENDPOINTS_TASK:{{rules_endpoints_task}}
+      RULES_ENDPOINTS_PARTY:{{rules_endpoints_party}}
+      RULES_ENDPOINTS_PARTY_GROUP:{{rules_endpoints_party_group}}
+      RULES_ENDPOINTS_PARTY_MEMBER:{{rules_endpoints_party_member}}
     depends_on:
       - foncier_wf
       - postgres          
