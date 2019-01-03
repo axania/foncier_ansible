@@ -25,19 +25,19 @@ services:
       DD_HOSTNAME: "{{ full_hostname }}" 
 {% endif %}
 
-  foncier_ui:
+  foncier-ui:
     restart: always
     image: sogema-docker.jfrog.io/sogema/foncier-ui:{{ foncier_ui_image_version }}
     ports:
       - "4200:4200"
     environment:
-      - API_URL=foncier_api:8280
-      - WORKFLOW_URL=foncier_wf:8080
+      - API_URL=foncier-api:8280
+      - WORKFLOW_URL=foncier-wf:8080
     depends_on:
-      - foncier_api        
-      - foncier_wf
+      - foncier-api        
+      - foncier-wf
 
-  foncier_wf:
+  foncier-wf:
     restart: always
     image: sogema-docker.jfrog.io/sogema/foncier_wf:{{ foncier_wf_image_version }}
     ports:
@@ -45,7 +45,7 @@ services:
     volumes:
       - ./keycloak_config/keycloak.json:/camunda/webapps/engine-rest/WEB-INF/keycloak.json
 
-  foncier_api:
+  foncier-api:
     restart: always
     image: sogema-docker.jfrog.io/sogema/foncier-api:{{ foncier_api_image_version }}
     ports:
@@ -92,7 +92,7 @@ services:
       RULES_ENDPOINTS_PARTY_GROUP: {{rules_endpoints_party_group}}
       RULES_ENDPOINTS_PARTY_MEMBER: {{rules_endpoints_party_member}}
     depends_on:
-      - foncier_wf
+      - foncier-wf
       - postgres          
 
   postgres:
@@ -111,7 +111,7 @@ services:
 
 
 {% if is_foncier_rules_api_enabled %}   
-  foncier_rules_api:
+  foncier-rules-api:
     restart: always
     image: sogema-docker.jfrog.io/sogema/foncier-rules-api:{{foncier_rules_api_image_version}}
     ports:
@@ -139,13 +139,13 @@ services:
     environment:
       SONARQUBE_JDBC_USERNAME: "sonar"
       SONARQUBE_JDBC_PASSWORD: "sonar"
-      SONARQUBE_JDBC_URL: "jdbc:postgresql://sonarqube_db:5432/sonar"   
+      SONARQUBE_JDBC_URL: "jdbc:postgresql://sonarqube-db:5432/sonar"   
     volumes:
       - sonar-data:/opt/sonarqube/extensions  
     depends_on: 
-      - sonarqube_db      
+      - sonarqube-db      
 
-  sonarqube_db:
+  sonarqube-db:
     image: postgres:10.4-alpine
     restart: always
     volumes:
