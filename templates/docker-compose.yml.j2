@@ -31,10 +31,10 @@ services:
     ports:
       - "4200:4200"
     environment:
-      - API_URL=foncier_api:8280
+      - API_URL=foncier-api:8280
       - WORKFLOW_URL=foncier_wf:8080
     depends_on:
-      - foncier_api        
+      - foncier-api        
       - foncier_wf
 
   foncier_wf:
@@ -45,7 +45,7 @@ services:
     volumes:
       - ./keycloak_config/keycloak.json:/camunda/webapps/engine-rest/WEB-INF/keycloak.json
 
-  foncier_api:
+  foncier-api:
     restart: always
     image: sogema-docker.jfrog.io/sogema/foncier-api:{{ foncier_api_image_version }}
     ports:
