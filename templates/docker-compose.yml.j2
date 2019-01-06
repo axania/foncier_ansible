@@ -1,3 +1,4 @@
+
 version: '3.3' # specify docker-compose version
 
 
@@ -39,11 +40,19 @@ services:
 
   foncier-wf:
     restart: always
-    image: sogema-docker.jfrog.io/sogema/foncier_wf:{{ foncier_wf_image_version }}
+    image: sogema-docker.jfrog.io/sogema/foncier-wf:7.8.13-ee
     ports:
-      - "8581:8080"      
+      - "8581:8080"
+    environment:
+      DB_DRIVER: "org.postgresql.Driver"
+      DB_URL: "jdbc:postgresql://{{ db_host }}:{{ db_port }}/process-engine"
+      DB_USERNAME: "{{ db_user }}"
+      DB_PASSWORD: "{{ db_pass }}"
+      WAIT_FOR: "{{ db_host }}:{{ db_port }}"
     volumes:
-      - ./keycloak_config/keycloak.json:/camunda/webapps/engine-rest/WEB-INF/keycloak.json
+      - ./custom-config/web.xml:/camunda/webapps/engine-rest/WEB-INF/web.xml
+      - ./custom-config/keycloak.json:/camunda/webapps/engine-rest/WEB-INF/keycloak.json
+      - ./custom-config/context.xml:/camunda/webapps/engine-rest/META-INF/context.xml
 
   foncier-api:
     restart: always
@@ -100,7 +109,7 @@ services:
     restart: always
     volumes:
       - postgres:/var/lib/postgresql/data
-      # - ./scripts:/docker-entrypoint-initdb.d
+      - ./scripts:/docker-entrypoint-initdb.d
     ports:
       - "5432:5432"      
     environment:
