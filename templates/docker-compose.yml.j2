@@ -40,7 +40,7 @@ services:
 
   foncier-wf:
     restart: always
-    image: sogema-docker.jfrog.io/sogema/foncier-wf:7.8.13-ee
+    image: sogema-docker.jfrog.io/sogema/foncier-wf:{{ foncier_wf_image_version }}
     ports:
       - "8581:8080"
     environment:
