@@ -141,34 +141,61 @@
        - postgres
        
   - file:
-      path: "/home/{{ansible_ssh_user}}/keycloak_config"
+      path: "/home/{{ansible_ssh_user}}/custom-config"
       state: directory
-      mode: 0755
-      group: sudo
+      mode: "u=rw,g=rw,o=r"
+      group: "docker"
       owner: "{{ansible_ssh_user}}"
-    when: is_keycloak_enabled
     tags:
-       - keycloak
+       - config_folder
 
-  - name: Upload keycloak file
+  - name: Upload keycloak file for Camunda + Keycloak
     template: 
       src: ../templates/keycloak.json.j2
-      dest: "/home/{{ansible_ssh_user}}/keycloak_config/keycloak.json"      
+      dest: "/home/{{ansible_ssh_user}}/custom-config/keycloak.json"      
       owner: "{{ansible_ssh_user}}"
-      group: sudo
-      mode: 0755
+      group: "docker"
+      mode: "u=rw,g=rw,o=r"
     when:   
       - is_keycloak_enabled 
     tags:
        - keycloak
-       
+       - config_folder     
+
+  - name: Upload custom web.xml file for Camunda + Keycloak 
+    template: 
+      src: ../templates/web.xml.j2
+      dest: "/home/{{ansible_ssh_user}}/custom-config/web.xml"      
+      owner: "{{ansible_ssh_user}}"
+      group: "docker"
+      mode: "u=rw,g=rw,o=r"
+    when:   
+      - is_keycloak_enabled 
+    tags:
+       - camunda
+       - config_folder       
+
+  - name: Upload custom context.xml file for Camunda + Keycloak
+    template: 
+      src: ../templates/context.xml.j2
+      dest: "/home/{{ansible_ssh_user}}/custom-config/context.xml"      
+      owner: "{{ansible_ssh_user}}"
+      group: "docker"
+      mode: "u=rw,g=rw,o=r"
+    when:   
+      - is_keycloak_enabled 
+    tags:
+       - camunda
+       - config_folder       
+
+
   - name: Upload docker-compose file
     template: 
       src: ../templates/docker-compose.yml.j2
       dest: "/home/{{ansible_ssh_user}}/docker-compose.yml"      
       owner: "{{ansible_ssh_user}}"
-      group: sudo
-      mode: 0755
+      group: docker
+      mode: "u=rw,g=rw,o=r"
     tags:
        - prep
        - docker-compose
@@ -189,27 +216,6 @@
       services: "{{ available_docker_services }}"
     tags:
        - deploy
-
-
-
-
-
-  - docker_service:
-      project_name: "sonar"
-      project_src: /home/{{ansible_ssh_user}}      
-      state: absent
-    tags:
-       - sonar
-
-  - docker_service:
-      project_name: "sonar"
-      project_src: /home/{{ansible_ssh_user}}      
-      state: present
-      pull: "{{ pull_images if pull_images else omit }}"
-      services: 
-        - sonarqube
-    tags:
-       - sonar
 
 
   roles:
