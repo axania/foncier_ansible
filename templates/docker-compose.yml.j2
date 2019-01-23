@@ -12,7 +12,7 @@ services:
 {% if is_datadog_on_docker %}
   datadog:
     restart: always
-    image: datadog/docker-dd-agent:12.6.5230-alpine
+    image: datadog/docker-dd-agent:latest
     ports:
       - "8125:8125/udp"
     volumes:
@@ -23,7 +23,8 @@ services:
       API_KEY: "{{ dd_key }}"
       SD_BACKEND: "docker"
       TAGS: "environment:{{ environment_name }},role:docker"
-      DD_HOSTNAME: "{{ full_hostname }}" 
+      DD_HOSTNAME: "{{ full_hostname }}"
+      DD_PROCESS_AGENT_ENABLED: "{{ dd_process_agent_enabled }}"
 {% endif %}
 
   foncier-ui:
