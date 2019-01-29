@@ -1,9 +1,7 @@
-
 version: '3.3' # specify docker-compose version
 
-
 volumes:
-  foncier-db:
+  foncier-postgres:
 
 # Define the services/containers to be run
 services:
@@ -108,8 +106,7 @@ services:
     image: postgres:10.4-alpine
     restart: always
     volumes:
-      - postgres:/var/lib/postgresql/data
-      - ./scripts:/docker-entrypoint-initdb.d
+      - foncier-postgres:/var/lib/postgresql/data
     ports:
       - "5432:5432"      
     environment:
