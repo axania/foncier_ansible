@@ -106,7 +106,7 @@ services:
     image: postgres:10.4-alpine
     restart: always
     volumes:
-      - foncier-postgres:/var/lib/postgresql/data
+      - postgres:/var/lib/postgresql/data
     ports:
       - "5432:5432"      
     environment:
