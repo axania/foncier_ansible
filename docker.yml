@@ -221,11 +221,13 @@
 
   - name: Create Foncier DB in its Postgres container
     postgresql_db: name=ladm login_host={{db_host}} login_user={{db_user}} port={{db_port}} login_password={{db_pass}}
+    when: inventory_hostname == "worker01"
     tags:
       - db
 
   - name: Create Camunda DB in its Postgres container
     postgresql_db: name=process-engine login_host={{db_host}} login_user={{db_user}} port={{db_port}} login_password={{db_pass}}
+    when: inventory_hostname == "worker01"
     tags:
       - db
 
