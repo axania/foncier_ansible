@@ -219,7 +219,7 @@
        - deploy
 
 
-  - name: Create Camunda DB in its Postgres container
+  - name: Create Foncier DB in its Postgres container
     postgresql_db: name=ladm login_host={{db_host}} login_user={{db_user}} port={{db_port}} login_password={{db_pass}}
     tags:
       - db
