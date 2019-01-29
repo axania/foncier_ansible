@@ -99,8 +99,20 @@
       group: sudo
       mode: 0755
     tags:
+       - prep
        - ssl      
       
+
+  - name: Install PIP Prerequisites
+    apt: name={{ item }} state=latest
+    with_items:
+      - libpq-dev
+      - python-psycopg2
+    tags:
+      - prep
+      - pip
+
+
   - name: Installing docker compose
     pip:
        name: docker-compose
@@ -128,17 +140,6 @@
     tags:
        - prep
        - docker-login
-
-  - name: Upload scripts postgres
-    copy: 
-      src: "scripts"
-      dest: "/home/{{ansible_ssh_user}}/"      
-      owner: "{{ansible_ssh_user}}"
-      directory_mode: yes
-      group: sudo
-      mode: 0755
-    tags:
-       - postgres
        
   - file:
       path: "/home/{{ansible_ssh_user}}/custom-config"
@@ -216,6 +217,17 @@
       services: "{{ available_docker_services }}"
     tags:
        - deploy
+
+
+  - name: Create Camunda DB in its Postgres container
+    postgresql_db: name=ladm login_host={{db_host}} login_user={{db_user}} port={{db_port}} login_password={{db_pass}}
+    tags:
+      - db
+
+  - name: Create Camunda DB in its Postgres container
+    postgresql_db: name=process-engine login_host={{db_host}} login_user={{db_user}} port={{db_port}} login_password={{db_pass}}
+    tags:
+      - db
 
 
   roles:

@@ -3,9 +3,7 @@ version: '3.3' # specify docker-compose version
 
 
 volumes:
-  postgres:
-  sonar-postgres:
-  sonar-data:
+  foncier-db:
 
 # Define the services/containers to be run
 services:
@@ -104,9 +102,9 @@ services:
       MALI_FOLIOS_PER_VOLUME: {{mali_folios_per_volume}}
     depends_on:
       - foncier-wf
-      - postgres          
+      - foncier-db
 
-  postgres:
+  foncier-db:
     image: postgres:10.4-alpine
     restart: always
     volumes:
@@ -118,8 +116,7 @@ services:
       POSTGRES_USER: "{{ db_user }}"
       POSTGRES_PASSWORD: "{{ db_pass }}"
       POSTGRES_DB: "{{ db_name }}"    
-      PGDATA: /var/lib/postgresql/data/pgdata
-
+      PGDATA: /var/lib/postgresql/data/PGDATA
 
 {% if is_foncier_rules_api_enabled %}   
   foncier-rules-api:
@@ -160,11 +157,11 @@ services:
       ports:
           - 8380:8080 #Browser port
       depends_on:
-        - share-alfresco
-        - postgres-alfresco
-        - solr6-alfresco
+        - alfresco-share
+        - alfresco-db
+        - alfresco-solr6
       
-  share-alfresco:
+  alfresco-share:
       image: alfresco/alfresco-share:6.0.b
       environment:
           - REPO_HOST=alfresco
@@ -172,7 +169,7 @@ services:
       ports:
           - 8080:8080
 
-  postgres-alfresco:
+  alfresco-db:
     image: postgres:10.1
     restart: always
     environment:
@@ -183,7 +180,7 @@ services:
     ports:
       - "5436:5432"
     
-  solr6-alfresco:
+  alfresco-solr6:
       image: alfresco/alfresco-search-services:1.1.1
       environment:
           #Solr needs to know how to register itself with Alfresco
