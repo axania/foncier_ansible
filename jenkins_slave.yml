@@ -37,6 +37,140 @@
       state: present
     when: jenkins_slave_node  
 
+
+  - name: set timezone to "{{timezone}}"
+    timezone:
+      name: "{{timezone}}"
+    tags:
+       - prep
+
+  - name: Update APT-GET cache
+    apt: update_cache=yes
+    tags:
+       - prep
+
+  - name: Update repository for Docker part 1 - Install some stuff
+    become: yes
+    command: "sudo apt-get install -y apt-transport-https ca-certificates curl  software-properties-common"
+    tags:
+       - prep
+
+  - apt_key:
+      url: "https://download.docker.com/linux/ubuntu/gpg"
+      state: present
+    tags:
+       - prep
+
+  - apt_repository:
+      repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable
+      state: present
+    tags:
+       - prep
+
+  - name: Update APT-GET cache again
+    apt: update_cache=yes
+    tags:
+       - prep
+
+  - name: Installs GIT
+    apt:
+      name: git
+      state: present
+      update_cache: yes
+    tags:
+       - prep
+
+  - name: Installs docker-ce with the updated cache and repo
+    apt:
+      name: docker-ce={{ docker_ce_version }}
+      state: present
+      update_cache: yes
+    tags:
+       - prep
+
+  - name: Make sure we have a 'docker' group
+    group:
+      name: docker
+      state: present
+    tags:
+       - prep
+
+  - user:
+      name: "{{ansible_ssh_user}}"
+      group: docker
+      append: yes
+    tags:
+       - prep
+
+  - user:
+      name: "dd-agent"
+      group: docker
+      append: yes
+    when:
+      - datadog_installed  
+    tags:
+       - prep
+
+  - name: Installs PIP
+    apt:
+      name: python-pip
+      state: present
+      update_cache: yes
+    tags:
+       - prep
+
+  - name: Upload certificates
+    copy: 
+      src: "artifacts"
+      dest: "/"      
+      owner: "{{ansible_ssh_user}}"
+      directory_mode: yes
+      group: sudo
+      mode: 0755
+    tags:
+       - prep
+       - ssl      
+      
+
+  - name: Install PIP Prerequisites
+    apt: name={{ item }} state=latest
+    with_items:
+      - libpq-dev
+      - python-psycopg2
+    tags:
+      - prep
+      - pip
+
+
+  - name: Installing docker compose
+    pip:
+       name: docker-compose
+       version: "{{ docker_compose_version if docker_compose_version else omit }}"
+       state: present    
+    tags:
+       - prep
+       - docker-login
+
+  - docker_login:
+      registry: "{{docker_registry}}"
+      username: "{{docker_user}}"
+      password: "{{docker_pwd}}"
+      email: "{{docker_email}}"
+    tags:
+       - prep
+       - docker-login
+
+  - docker_login:
+      config_path: "/home/{{ansible_ssh_user}}/.docker/config.json"
+      registry: "{{docker_registry}}"
+      username: "{{docker_user}}"
+      password: "{{docker_pwd}}"
+      email: "{{docker_email}}"
+    tags:
+       - prep
+       - docker-login
+
+
   - user:
       name: "{{ansible_ssh_user}}"
       group: jenkins
