@@ -141,6 +141,36 @@
        - prep
        - docker-login
        
+  - name: Create target haproxy directory
+    file: path=/home/{{ansible_ssh_user}}/haproxy state=directory mode=0755
+    when: "'lb' in group_names"      
+    tags:
+      - loadbalancer
+
+  - name: Upload haproxy Dockerfile
+    copy: 
+      src: "./files/haproxy/Dockerfile"
+      dest: "/home/{{ansible_ssh_user}}/haproxy/Dockerfile"    
+      owner: "{{ansible_ssh_user}}"
+      group: sudo
+      mode: 0755
+    when: "'lb' in group_names"        
+    tags:
+      - loadbalancer
+      - deploy
+
+  - name: Upload haproxy cofiguration
+    template: 
+      src: ../templates/haproxy.cfg.j2
+      dest: "/home/{{ansible_ssh_user}}/haproxy/haproxy.cfg"      
+      owner: "{{ansible_ssh_user}}"
+      group: sudo
+      mode: 0755
+    when: "'lb' in group_names"   
+    tags:
+      - loadbalancer
+      - deploy
+
   - file:
       path: "/home/{{ansible_ssh_user}}/custom-config"
       state: directory

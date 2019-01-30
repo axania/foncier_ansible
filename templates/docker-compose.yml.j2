@@ -5,6 +5,16 @@ volumes:
 
 # Define the services/containers to be run
 services:
+
+{% if 'lb' in group_names %}
+  haproxy:
+    restart: always
+    build: ./haproxy
+    ports:
+      - 80:80
+      - 443:443
+{% endif %}
+
 {% if is_datadog_on_docker %}
   datadog:
     restart: always
