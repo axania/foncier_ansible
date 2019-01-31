@@ -1,5 +1,5 @@
 ---
-- hosts: haproxy
+- hosts: docker
   become: yes
   vars:
     datadog_api_key: "{{ dd_key }}"
