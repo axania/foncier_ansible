@@ -143,7 +143,7 @@
        
   - name: Create target haproxy directory
     file: path=/home/{{ansible_ssh_user}}/haproxy state=directory mode=0755
-    when: "'lb' in group_names"      
+    when: inventory_hostname == "lb01"    
     tags:
       - loadbalancer
 
@@ -154,7 +154,7 @@
       owner: "{{ansible_ssh_user}}"
       group: sudo
       mode: 0755
-    when: "'lb' in group_names"        
+    when: inventory_hostname == "lb01"    
     tags:
       - loadbalancer
       - deploy
@@ -166,7 +166,7 @@
       owner: "{{ansible_ssh_user}}"
       group: sudo
       mode: 0755
-    when: "'lb' in group_names"   
+    when: inventory_hostname == "lb01"
     tags:
       - loadbalancer
       - deploy
@@ -257,7 +257,6 @@
 
   - name: Create Camunda DB in its Postgres container
     postgresql_db: name=process-engine login_host={{db_host}} login_user={{db_user}} port={{db_port}} login_password={{db_pass}}
-    when: inventory_hostname == "worker01"
     when: inventory_hostname == "worker01"
     tags:
       - db
