@@ -85,7 +85,7 @@
     when:
       - datadog_installed  
     tags:
-       - prep
+      - prep
 
   - name: Installs PIP
     apt:
@@ -127,6 +127,58 @@
        - prep
        - docker-login
 
+       
+  - name: Create target haproxy directory
+    file: path=/home/{{ansible_ssh_user}}/haproxy state=directory mode=0755 
+    tags:
+      - loadbalancer
+
+  - name: Upload haproxy Dockerfile
+    copy: 
+      src: "./files/haproxy/Dockerfile"
+      dest: "/home/{{ansible_ssh_user}}/haproxy/Dockerfile"    
+      owner: "{{ansible_ssh_user}}"
+      group: sudo
+      mode: 0755  
+    tags:
+      - loadbalancer
+      - deploy
+
+  - name: Upload haproxy cofiguration
+    template: 
+      src: ../templates/haproxy.cfg.j2
+      dest: "/home/{{ansible_ssh_user}}/haproxy.cfg"      
+      owner: "{{ansible_ssh_user}}"
+      group: sudo
+      mode: 0755
+    tags:
+      - loadbalancer
+      - deploy
+
+  - name: Upload haproxy cofiguration
+    template: 
+      src: ../templates/haproxy.cfg.j2
+      dest: "/usr/local/etc/haproxy/haproxy.cfg"      
+      owner: "{{ansible_ssh_user}}"
+      group: sudo
+      mode: 0777
+    tags:
+      - loadbalancer
+      - deploy
+
+  - name: Upload docker-compose file
+    template: 
+      src: ../templates/haproxy-docker-compose.yml.j2
+      dest: "/home/{{ansible_ssh_user}}/docker-compose.yml"      
+      owner: "{{ansible_ssh_user}}"
+      group: docker
+      mode: "u=rw,g=rw,o=r"
+    tags:
+       - prep
+       - docker-compose
+       - deploy
+
+
   - docker_login:
       registry: "{{docker_registry}}"
       username: "{{docker_user}}"
@@ -145,48 +197,6 @@
     tags:
        - prep
        - docker-login
-       
-  - name: Create target haproxy directory
-    file: path=/home/{{ansible_ssh_user}}/haproxy state=directory mode=0755
-    when: "'lb' in group_names"      
-    tags:
-      - loadbalancer
-
-  - name: Upload haproxy Dockerfile
-    copy: 
-      src: "./files/haproxy/Dockerfile"
-      dest: "/home/{{ansible_ssh_user}}/haproxy/Dockerfile"    
-      owner: "{{ansible_ssh_user}}"
-      group: sudo
-      mode: 0755
-    when: "'lb' in group_names"        
-    tags:
-      - loadbalancer
-      - deploy
-
-  - name: Upload haproxy cofiguration
-    template: 
-      src: ../templates/haproxy.cfg.j2
-      dest: "/home/{{ansible_ssh_user}}/haproxy/haproxy.cfg"      
-      owner: "{{ansible_ssh_user}}"
-      group: sudo
-      mode: 0755
-    when: "'lb' in group_names"   
-    tags:
-      - loadbalancer
-      - deploy
-
-  - name: Upload docker-compose file
-    template: 
-      src: ../templates/haproxy-docker-compose.yml.j2
-      dest: "/home/{{ansible_ssh_user}}/docker-compose.yml"      
-      owner: "{{ansible_ssh_user}}"
-      group: docker
-      mode: "u=rw,g=rw,o=r"
-    tags:
-       - prep
-       - docker-compose
-       - deploy
 
   - docker_service:
       project_name: "{{ansible_ssh_user}}"

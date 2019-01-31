@@ -1,11 +1,8 @@
 version: '3.3'
 
-volumes:
-
 services:
 
 {% if is_datadog_on_docker %}
-
   datadog:
     restart: always
     image: datadog/docker-dd-agent:latest
@@ -18,19 +15,17 @@ services:
     environment:
       API_KEY: "{{ dd_key }}"
       SD_BACKEND: "docker"
-      TAGS: "environment:{{ environment_name }},role:docker"
+      TAGS: "environment:{{ environment_name }},role:loadbalancer,product:foncier"
       DD_HOSTNAME: "{{ full_hostname }}"
       DD_PROCESS_AGENT_ENABLED: "{{ dd_process_agent_enabled }}"
-
 {% endif %}
-
-{% if 'lb' in group_names %}
 
   haproxy:
     restart: always
+    #image: haproxy
     build: ./haproxy
+    #volumes:
+    #  - /usr/local/etc/haproxy/:/usr/local/etc/haproxy/
     ports:
       - 80:80
       - 443:443
-
-{% endif %}
