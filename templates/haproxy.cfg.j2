@@ -19,13 +19,13 @@ frontend http
   bind *:80
   acl auth_ok http_auth(users)
   http-request auth unless auth_ok  
-  use_backend otr_api_back
+  use_backend foncier_api_back
 
 userlist users
   user {{ haproxy_user }}  insecure-password {{ haproxy_pass }} 
  
 
-backend otr_api_back
+backend foncier_api_back
    balance roundrobin
 {% for backend in haproxy_backend_servers %}
    server {{ backend.name }} {{ backend.address }} check

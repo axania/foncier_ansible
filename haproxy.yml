@@ -1,48 +1,208 @@
 ---
-- hosts: docker
+- hosts: haproxy
   become: yes
-  vars:
-    datadog_api_key: "{{ dd_key }}"
-    datadog_enabled: "{{ dd_enabled }}"
-    datadog_config:
-      tags: "environment:{{ environment_name }}, role:loadbalancer"
-      hostname: "{{full_hostname}}"
-    datadog_checks:
-      haproxy:
-        init_config:
-        instances:
-        - username: "{{ haproxy_stats_user }}"
-          password: "{{ haproxy_stats_pass }}"
-          url: "https://{{audit_domain}}/haproxy?stats"
-      ssh_check:
-        init_config:
-        instances:
-        - username: "{{ ansible_ssh_user }}"
-          password: "{{ ansible_ssh_pass }}"
-          host: "{{ansible_ssh_host}}"
 
+  vars:
     resolv_searchpath: "{{ dns_resolv_searchpath }}"
     resolv_dns_server: "{{ dns_server_list }}"
-    haproxy_frontends:
-      https_ui_front:
-      - bind *:80
-      - bind *:443 ssl crt /etc/ssl/{{audit_domain}}/{{audit_domain}}.pem ca-file /etc/ssl/{{audit_domain}}/{{audit_domain}}_intermediate.crt
-      - mode http
-      - acl http  ssl_fc,not
-      - http-request redirect scheme https if http
-      - default_backend ui_back
-    haproxy_backends:
-      ui_back: "{{ ui_backend_list }}"
+    save_hosts: "{{ etc_save_hosts }}"
 
-  pre_tasks:
+  vars:
+    resolv_searchpath: "{{ dns_resolv_searchpath }}"
+    resolv_dns_server: "{{ dns_server_list }}"
+    save_hosts: "{{ etc_save_hosts }}"
+
+  tasks:
+
+  - name: set timezone to "{{timezone}}"
+    timezone:
+      name: "{{timezone}}"
+    tags:
+       - prep
+
+  - name: Update APT-GET cache
+    apt: update_cache=yes
+    tags:
+       - prep
+
+  - name: Update repository for Docker part 1 - Install some stuff
+    become: yes
+    command: "sudo apt-get install -y apt-transport-https ca-certificates curl  software-properties-common"
+    tags:
+       - prep
+
+  - apt_key:
+      url: "https://download.docker.com/linux/ubuntu/gpg"
+      state: present
+    tags:
+       - prep
+
+  - apt_repository:
+      repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable
+      state: present
+    tags:
+       - prep
+
+  - name: Update APT-GET cache again
+    apt: update_cache=yes
+    tags:
+       - prep
+
+  - name: Installs GIT
+    apt:
+      name: git
+      state: present
+      update_cache: yes
+    tags:
+       - prep
+
+  - name: Installs docker-ce with the updated cache and repo
+    apt:
+      name: docker-ce={{ docker_ce_version }}
+      state: present
+      update_cache: yes
+    tags:
+       - prep
+
+  - name: Make sure we have a 'docker' group
+    group:
+      name: docker
+      state: present
+    tags:
+       - prep
+
+  - user:
+      name: "{{ansible_ssh_user}}"
+      group: docker
+      append: yes
+    tags:
+       - prep
+
+  - user:
+      name: "dd-agent"
+      group: docker
+      append: yes
+    when:
+      - datadog_installed  
+    tags:
+       - prep
+
+  - name: Installs PIP
+    apt:
+      name: python-pip
+      state: present
+      update_cache: yes
+    tags:
+       - prep
+
   - name: Upload certificates
     copy: 
-      src: "artifacts/{{audit_domain}}"
-      dest: "/etc/ssl/"      
+      src: "artifacts"
+      dest: "/"      
       owner: "{{ansible_ssh_user}}"
       directory_mode: yes
       group: sudo
       mode: 0755
+    tags:
+       - prep
+       - ssl      
+      
+
+  - name: Install PIP Prerequisites
+    apt: name={{ item }} state=latest
+    with_items:
+      - libpq-dev
+      - python-psycopg2
+    tags:
+      - prep
+      - pip
+
+
+  - name: Installing docker compose
+    pip:
+       name: docker-compose
+       version: "{{ docker_compose_version if docker_compose_version else omit }}"
+       state: present    
+    tags:
+       - prep
+       - docker-login
+
+  - docker_login:
+      registry: "{{docker_registry}}"
+      username: "{{docker_user}}"
+      password: "{{docker_pwd}}"
+      email: "{{docker_email}}"
+    tags:
+       - prep
+       - docker-login
+
+  - docker_login:
+      config_path: "/home/{{ansible_ssh_user}}/.docker/config.json"
+      registry: "{{docker_registry}}"
+      username: "{{docker_user}}"
+      password: "{{docker_pwd}}"
+      email: "{{docker_email}}"
+    tags:
+       - prep
+       - docker-login
+       
+  - name: Create target haproxy directory
+    file: path=/home/{{ansible_ssh_user}}/haproxy state=directory mode=0755
+    when: "'lb' in group_names"      
+    tags:
+      - loadbalancer
+
+  - name: Upload haproxy Dockerfile
+    copy: 
+      src: "./files/haproxy/Dockerfile"
+      dest: "/home/{{ansible_ssh_user}}/haproxy/Dockerfile"    
+      owner: "{{ansible_ssh_user}}"
+      group: sudo
+      mode: 0755
+    when: "'lb' in group_names"        
+    tags:
+      - loadbalancer
+      - deploy
+
+  - name: Upload haproxy cofiguration
+    template: 
+      src: ../templates/haproxy.cfg.j2
+      dest: "/home/{{ansible_ssh_user}}/haproxy/haproxy.cfg"      
+      owner: "{{ansible_ssh_user}}"
+      group: sudo
+      mode: 0755
+    when: "'lb' in group_names"   
+    tags:
+      - loadbalancer
+      - deploy
+
+  - name: Upload docker-compose file
+    template: 
+      src: ../templates/haproxy-docker-compose.yml.j2
+      dest: "/home/{{ansible_ssh_user}}/docker-compose.yml"      
+      owner: "{{ansible_ssh_user}}"
+      group: docker
+      mode: "u=rw,g=rw,o=r"
+    tags:
+       - prep
+       - docker-compose
+       - deploy
+
+  - docker_service:
+      project_name: "{{ansible_ssh_user}}"
+      project_src: /home/{{ansible_ssh_user}}      
+      state: absent
+    tags:
+       - deploy
+
+  - docker_service:
+      project_name: "{{ansible_ssh_user}}"
+      project_src: /home/{{ansible_ssh_user}}      
+      state: present
+      pull: "{{ pull_images if pull_images else omit }}"
+      services: "{{ available_docker_services }}"
+    tags:
+       - deploy
 
   roles:
     - { role: Datadog.datadog, become: yes, when: datadog_installed} 
