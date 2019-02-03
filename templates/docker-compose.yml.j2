@@ -77,12 +77,14 @@ services:
       EDMS_ALFRESCO_CONTAINER: {{ edms_alfresco_container }}
       MAIL_HOST: {{ mail_host }}
       MAIL_PORT: {{ mail_port }}
+      MAIL_FROM: {{ mail_from }}
       MAIL_USERNAME: {{ mail_username }}
       MAIL_PASSWORD: {{ mail_password }}
       MAIL_PROTOCOL: {{ mail_protocol }}
       MAIL_DEFAULTENCODING: {{ mail_defaultencoding }}
       MAIL_SMTP_AUTH_ENABLED: '{{ mail_smtp_auth_enabled }}'
       MAIL_TLS_ENABLED: '{{ mail_tls_enabled }}'
+      MAIL_DEBUG: '{{ mail_debug }}'
       KEYCLOAK_AUTH_SERVER_URL: {{ keycloak_auth_server_url }}
       KEYCLOAK_REALM: {{ keycloak_realm }}
       KEYCLOAK_SSL_REQUIRED: '{{ keycloak_ssl_required }}'
