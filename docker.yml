@@ -228,7 +228,6 @@
   - name: Create Camunda DB in its Postgres container
     postgresql_db: name=process-engine login_host={{db_host}} login_user={{db_user}} port={{db_port}} login_password={{db_pass}}
     when: inventory_hostname == "worker01"
-    when: inventory_hostname == "worker01"
     tags:
       - db
 
@@ -236,7 +235,6 @@
   roles:
     - { role: soplakanets.hosts }
     - { role: ypsman.resolv } 
-    - { role: sogema.filebeat,  when: is_docker_prospector_enabled } 
 
       
   
