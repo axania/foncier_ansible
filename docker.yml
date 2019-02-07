@@ -261,5 +261,3 @@
   roles:
     - { role: soplakanets.hosts }
     - { role: ypsman.resolv } 
-    - { role: sogema.filebeat,  when: is_docker_prospector_enabled } 
-  
