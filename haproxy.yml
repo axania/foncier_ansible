@@ -1,6 +1,7 @@
 ---
 - hosts: haproxy
-  become: yes
+  #become: yes
+  sudo: yes
 
   vars:
     resolv_searchpath: "{{ dns_resolv_searchpath }}"
@@ -144,7 +145,7 @@
       - loadbalancer
       - deploy
 
-  - name: Upload haproxy cofiguration
+  - name: Upload haproxy configuration
     template: 
       src: ../templates/haproxy.cfg.j2
       dest: "/home/{{ansible_ssh_user}}/haproxy.cfg"      
@@ -155,7 +156,13 @@
       - loadbalancer
       - deploy
 
-  - name: Upload haproxy cofiguration
+
+  - name: Create target haproxy etc directory
+    file: path=/usr/local/etc/haproxy/ state=directory mode=0755 
+    tags:
+      - loadbalancer
+
+  - name: Upload haproxy configuration
     template: 
       src: ../templates/haproxy.cfg.j2
       dest: "/usr/local/etc/haproxy/haproxy.cfg"      

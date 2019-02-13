@@ -22,10 +22,10 @@ services:
 
   haproxy:
     restart: always
-    #image: haproxy
+    image: haproxy
     build: ./haproxy
-    #volumes:
-    #  - /usr/local/etc/haproxy/:/usr/local/etc/haproxy/
+    volumes:
+      - /usr/local/etc/haproxy/:/usr/local/etc/haproxy/
     ports:
       - 80:80
       - 443:443
