@@ -219,9 +219,18 @@
        - deploy
 
 
+  - name: Wait for port 5432 to become open on the host, don't start checking for 3 secs
+    wait_for:
+      port: 5432
+      connect_timeout: 3
+      delay: 3
+      timeout: 30
+    tags:
+       - creds
+
   - name: Create Foncier DB in its Postgres container
     postgresql_db: name=ladm login_host={{db_host}} login_user={{db_user}} port={{db_port}} login_password={{db_pass}}
-    when: inventory_hostname == "worker01"
+    when: inventory_hostname == "worker01"  
     tags:
       - db
 

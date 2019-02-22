@@ -104,7 +104,6 @@ services:
       MALI_FOLIOS_PER_VOLUME: {{mali_folios_per_volume}}
     depends_on:
       - foncier-wf
-      - foncier-db
 
   foncier-db:
     image: postgres:10.4-alpine
