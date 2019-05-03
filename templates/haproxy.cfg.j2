@@ -1,32 +1,40 @@
 global
-  daemon
-  log 127.0.0.1 local0
-  log 127.0.0.1 local1 notice
-  maxconn 4096
-  tune.ssl.default-dh-param 2048
+    log /dev/log local0 debug
+    log-send-hostname
+    maxconn 2048
+    tune.ssl.default-dh-param 2048
 
 defaults
-  log     global
-  mode    http
-  option  httplog
-  option  dontlognull
-  timeout connect 5000
-  timeout client  50000
-  timeout server  50000
+    option httplog
+    timeout connect 10s
+    timeout client 30s
+    timeout server 30s
+    log global
 
-frontend http
-  mode http
-  bind *:80
-  acl auth_ok http_auth(users)
-  http-request auth unless auth_ok  
-  use_backend foncier_api_back
+frontend lb
+    mode http
+    bind *:80
+    bind *:443 ssl crt /artifacts/{{ pem_artifact }}
+    redirect scheme https if !{ ssl_fc }
+    log-format %ci:%cp\ [%t]\ %ft\ %b/%s\ %Tq/%Tw/%Tc/%Tr/%Tt\ %ST\ %B\ %CC\ %CS\ %tsc\ %ac/%fc/%bc/%sc/%rc\ %sq/%bq\ %hr\ %hs\ %{+Q}r\ %ID
 
-userlist users
-  user {{ haproxy_user }}  insecure-password {{ haproxy_pass }} 
- 
+    # Configuration of headers for Keycloak
+    http-request set-header X-Forwarded-Port %[dst_port]
+    http-request set-header X-Forwarded-For %[src]
+    http-request set-header X-Forwarded-Proto https
+    http-send-name-header Host
 
-backend foncier_api_back
-   balance roundrobin
-{% for backend in haproxy_backend_servers %}
-   server {{ backend.name }} {{ backend.address }} check
-{% endfor %}
+    # Selection of Keycloak or UI according to path
+    acl is_keycloak path -i -m beg /auth
+    use_backend foncier-keycloak if is_keycloak
+    use_backend foncier-ui if !is_keycloak
+
+backend foncier-keycloak
+    mode http
+    server keycloak {{ keycloak_host }}:{{ keycloak_port }}
+
+backend foncier-ui
+    mode http
+    balance roundrobin
+    cookie SERVERUSED insert indirect nocache
+    server ui {{ ui_host }}:{{ ui_port }} cookie server1

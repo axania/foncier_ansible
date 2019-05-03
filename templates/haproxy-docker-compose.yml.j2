@@ -22,10 +22,10 @@ services:
 
   haproxy:
     restart: always
-    image: haproxy
-    build: ./haproxy
+    image: haproxy:1.9.7-alpine
     volumes:
       - /usr/local/etc/haproxy/:/usr/local/etc/haproxy/
+      - /artifacts/:/artifacts/
     ports:
       - 80:80
       - 443:443

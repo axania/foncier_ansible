@@ -1,12 +1,6 @@
 ---
 - hosts: haproxy
-  #become: yes
-  sudo: yes
-
-  vars:
-    resolv_searchpath: "{{ dns_resolv_searchpath }}"
-    resolv_dns_server: "{{ dns_server_list }}"
-    save_hosts: "{{ etc_save_hosts }}"
+  become: yes
 
   vars:
     resolv_searchpath: "{{ dns_resolv_searchpath }}"
@@ -32,13 +26,15 @@
     tags:
        - prep
 
-  - apt_key:
+  - name: Add GPG key for Docker
+    apt_key:
       url: "https://download.docker.com/linux/ubuntu/gpg"
       state: present
     tags:
        - prep
 
-  - apt_repository:
+  - name: Add APT repo for Docker
+    apt_repository:
       repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable
       state: present
     tags:
@@ -49,7 +45,7 @@
     tags:
        - prep
 
-  - name: Installs GIT
+  - name: Install GIT
     apt:
       name: git
       state: present
@@ -57,7 +53,7 @@
     tags:
        - prep
 
-  - name: Installs docker-ce with the updated cache and repo
+  - name: Install docker-ce with the updated cache and repo
     apt:
       name: docker-ce={{ docker_ce_version }}
       state: present
@@ -72,23 +68,25 @@
     tags:
        - prep
 
-  - user:
+  - name: Add current user to Docker group
+    user:
       name: "{{ansible_ssh_user}}"
       group: docker
       append: yes
     tags:
        - prep
 
-  - user:
+  - name: Add 'dd-agent' user to Docker group
+    user:
       name: "dd-agent"
       group: docker
       append: yes
     when:
-      - datadog_installed  
+      - datadog_installed
     tags:
       - prep
 
-  - name: Installs PIP
+  - name: Install PIP
     apt:
       name: python-pip
       state: present
@@ -97,17 +95,16 @@
        - prep
 
   - name: Upload certificates
-    copy: 
+    copy:
       src: "artifacts"
-      dest: "/"      
+      dest: "/"
       owner: "{{ansible_ssh_user}}"
       directory_mode: yes
       group: sudo
       mode: 0755
     tags:
        - prep
-       - ssl      
-      
+       - ssl
 
   - name: Install PIP Prerequisites
     apt: name={{ item }} state=latest
@@ -118,37 +115,34 @@
       - prep
       - pip
 
-
-  - name: Installing docker compose
+  - name: Install Docker Compose
     pip:
        name: docker-compose
        version: "{{ docker_compose_version if docker_compose_version else omit }}"
-       state: present    
+       state: present
     tags:
        - prep
        - docker-login
 
-       
-  - name: Create target haproxy directory
-    file: path=/home/{{ansible_ssh_user}}/haproxy state=directory mode=0755 
+  - name: Log into Docker registry
+    docker_login:
+      registry: "{{docker_registry}}"
+      username: "{{docker_user}}"
+      password: "{{docker_pwd}}"
+      email: "{{docker_email}}"
     tags:
-      - loadbalancer
+       - prep
+       - docker-login
 
-  - name: Upload haproxy Dockerfile
-    copy: 
-      src: "./files/haproxy/Dockerfile"
-      dest: "/home/{{ansible_ssh_user}}/haproxy/Dockerfile"    
-      owner: "{{ansible_ssh_user}}"
-      group: sudo
-      mode: 0755  
+  - name: Create target haproxy directory
+    file: path=/usr/local/etc/haproxy state=directory mode=0755
     tags:
       - loadbalancer
-      - deploy
 
   - name: Upload haproxy configuration
-    template: 
+    template:
       src: ../templates/haproxy.cfg.j2
-      dest: "/home/{{ansible_ssh_user}}/haproxy.cfg"      
+      dest: "/usr/local/etc/haproxy/haproxy.cfg"
       owner: "{{ansible_ssh_user}}"
       group: sudo
       mode: 0755
@@ -156,27 +150,10 @@
       - loadbalancer
       - deploy
 
-
-  - name: Create target haproxy etc directory
-    file: path=/usr/local/etc/haproxy/ state=directory mode=0755 
-    tags:
-      - loadbalancer
-
-  - name: Upload haproxy configuration
-    template: 
-      src: ../templates/haproxy.cfg.j2
-      dest: "/usr/local/etc/haproxy/haproxy.cfg"      
-      owner: "{{ansible_ssh_user}}"
-      group: sudo
-      mode: 0777
-    tags:
-      - loadbalancer
-      - deploy
-
   - name: Upload docker-compose file
-    template: 
+    template:
       src: ../templates/haproxy-docker-compose.yml.j2
-      dest: "/home/{{ansible_ssh_user}}/docker-compose.yml"      
+      dest: "/home/{{ansible_ssh_user}}/docker-compose.yml"
       owner: "{{ansible_ssh_user}}"
       group: docker
       mode: "u=rw,g=rw,o=r"
@@ -185,36 +162,18 @@
        - docker-compose
        - deploy
 
-
-  - docker_login:
-      registry: "{{docker_registry}}"
-      username: "{{docker_user}}"
-      password: "{{docker_pwd}}"
-      email: "{{docker_email}}"
-    tags:
-       - prep
-       - docker-login
-
-  - docker_login:
-      config_path: "/home/{{ansible_ssh_user}}/.docker/config.json"
-      registry: "{{docker_registry}}"
-      username: "{{docker_user}}"
-      password: "{{docker_pwd}}"
-      email: "{{docker_email}}"
-    tags:
-       - prep
-       - docker-login
-
-  - docker_service:
+  - name: Run the 'down' command for Docker Compose
+    docker_service:
       project_name: "{{ansible_ssh_user}}"
-      project_src: /home/{{ansible_ssh_user}}      
+      project_src: /home/{{ansible_ssh_user}}
       state: absent
     tags:
        - deploy
 
-  - docker_service:
+  - name: Run the 'up' command for Docker Compose
+    docker_service:
       project_name: "{{ansible_ssh_user}}"
-      project_src: /home/{{ansible_ssh_user}}      
+      project_src: /home/{{ansible_ssh_user}}
       state: present
       pull: "{{ pull_images if pull_images else omit }}"
       services: "{{ available_docker_services }}"
@@ -222,7 +181,5 @@
        - deploy
 
   roles:
-    - { role: Datadog.datadog, become: yes, when: datadog_installed} 
-    - { role: ypsman.resolv } 
-    - { role: SimpliField.haproxy } 
-  
+    - { role: soplakanets.hosts }
+    - { role: ypsman.resolv }
