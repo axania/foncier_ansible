@@ -124,8 +124,19 @@
        - prep
        - docker-login
 
-  - name: Log into Docker registry
+  - name: Log into Sogema JFrog Docker registry for current user
     docker_login:
+      registry: "{{docker_registry}}"
+      username: "{{docker_user}}"
+      password: "{{docker_pwd}}"
+      email: "{{docker_email}}"
+    tags:
+       - prep
+       - docker-login
+
+  - name: Log into Sogema JFrog Docker registry for '{{ansible_ssh_user}}' user
+    docker_login:
+      config_path: "/home/{{ansible_ssh_user}}/.docker/config.json"
       registry: "{{docker_registry}}"
       username: "{{docker_user}}"
       password: "{{docker_pwd}}"
