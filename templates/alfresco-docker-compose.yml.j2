@@ -1,11 +1,10 @@
-version: '3.3' # specify docker-compose version
+version: '3.3'
 
 volumes:
   alfresco-data:
   alfresco-db:
   alfresco-solr-data:
 
-# Define the services/containers to be run
 services:
 {% if is_datadog_on_docker %}
   datadog:

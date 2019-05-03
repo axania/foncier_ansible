@@ -1,0 +1,31 @@
+version: '3.3'
+
+services:
+
+{% if is_datadog_on_docker %}
+  datadog:
+    restart: always
+    image: datadog/docker-dd-agent:latest
+    ports:
+      - "8125:8125/udp"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro 
+      - /proc/:/host/proc/:ro 
+      - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro 
+    environment:
+      API_KEY: "{{ dd_key }}"
+      SD_BACKEND: "docker"
+      TAGS: "environment:{{ environment_name }},role:loadbalancer,product:foncier"
+      DD_HOSTNAME: "{{ full_hostname }}"
+      DD_PROCESS_AGENT_ENABLED: "{{ dd_process_agent_enabled }}"
+{% endif %}
+
+  haproxy:
+    restart: always
+    image: haproxy:1.9.7-alpine
+    volumes:
+      - /usr/local/etc/haproxy/:/usr/local/etc/haproxy/
+      - /artifacts/:/artifacts/
+    ports:
+      - 80:80
+      - 443:443

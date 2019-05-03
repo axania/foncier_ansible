@@ -1,10 +1,11 @@
-version: '3.3' # specify docker-compose version
+version: '3.3'
 
 volumes:
   postgres:
 
 # Define the services/containers to be run
 services:
+
 {% if is_datadog_on_docker %}
   datadog:
     restart: always
@@ -18,7 +19,7 @@ services:
     environment:
       API_KEY: "{{ dd_key }}"
       SD_BACKEND: "docker"
-      TAGS: "environment:{{ environment_name }},role:docker"
+      TAGS: "environment:{{ environment_name }},role:docker,product:foncier"
       DD_HOSTNAME: "{{ full_hostname }}"
       DD_PROCESS_AGENT_ENABLED: "{{ dd_process_agent_enabled }}"
 {% endif %}
