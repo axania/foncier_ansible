@@ -105,6 +105,8 @@ services:
       RULES_ENDPOINTS_PARTY_MEMBER: {{rules_endpoints_party_member}}
       MALI_FOLIOS_PER_VOLUME: {{mali_folios_per_volume}}
       LOGS_LEVEL: {{logs_level}}
+    volumes:
+      - /artifacts/java/cacerts:/etc/ssl/certs/java/cacerts
     depends_on:
       - foncier-wf
 
