@@ -25,9 +25,15 @@ frontend lb
     http-send-name-header Host
 
     # Selection of Keycloak or UI according to path
+    acl is_alfresco path -i -m beg /share
     acl is_keycloak path -i -m beg /auth
+    use_backend foncier-alfresco if is_alfresco
     use_backend foncier-keycloak if is_keycloak
-    use_backend foncier-ui if !is_keycloak
+    use_backend foncier-ui
+
+backend foncier-alfresco
+    mode http
+    server alfresco {{ alfresco_host }}:{{ alfresco_port }}
 
 backend foncier-keycloak
     mode http

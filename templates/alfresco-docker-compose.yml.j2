@@ -25,21 +25,26 @@ services:
 {% endif %}
    
   alfresco:
-      image: alfresco/alfresco-content-repository-community:6.0.7-ga
+      restart: always
+      #image: alfresco/alfresco-content-repository-community:6.0.7-ga
+      build:
+          context: ./alfresco
       environment:
           JAVA_OPTS : "
               -Ddb.driver=org.postgresql.Driver
               -Ddb.username=alfresco
               -Ddb.password=alfresco
               -Ddb.url=jdbc:postgresql://alfresco-db:5432/alfresco
+              -Ddb.pool.max=975
+              -Dindex.subsystem.name=solr6
               -Dsolr.host=alfresco-solr6
               -Dsolr.port=8983
               -Dsolr.secureComms=none
               -Dsolr.base.url=/solr
-              -Dindex.subsystem.name=solr6
               -Dshare.host={{ share_host }}
               -Ddeployment.method=DOCKER_COMPOSE
               -Dcsrf.filter.enabled=false
+              -Xms{{ alfresco_xms }} -Xmx{{ alfresco_xmx }}
               "
       ports:
           - 8380:8080 #Browser port
@@ -51,14 +56,20 @@ services:
         - alfresco-solr6
       
   alfresco-share:
+      restart: always
       image: alfresco/alfresco-share:6.0.b
       environment:
+{% if edms_csrf_filter_origin is defined %}
+          - CSRF_FILTER_ORIGIN={{ edms_csrf_filter_origin }}
+{% endif %}
           - REPO_HOST=alfresco
           - REPO_PORT=8080
+          - "CATALINA_OPTS= -Xms{{ share_xms }} -Xmx{{ share_xmx }}"
       ports:
           - 8080:8080
 
   alfresco-db:
+    restart: always
     image: postgres:10.1
     restart: always
     environment:
@@ -66,12 +77,14 @@ services:
           - POSTGRES_USER=alfresco
           - POSTGRES_DB=alfresco
           - PGDATA=/var/lib/postgresql/data/pgdata
+    command: postgres -c max_connections=1000 -c log_min_messages=LOG
     volumes:
       - alfresco-db:/var/lib/postgresql/data            
     ports:
       - "5436:5432"
-    
+
   alfresco-solr6:
+      restart: always
       image: alfresco/alfresco-search-services:1.1.1
       environment:
           #Solr needs to know how to register itself with Alfresco
@@ -82,7 +95,9 @@ services:
           - SOLR_SOLR_PORT=8983
           #Create the default alfresco and archive cores
           - SOLR_CREATE_ALFRESCO_DEFAULTS=alfresco,archive
+          #Set JVM memory values
+          - "SOLR_JAVA_MEM=-Xms{{ solr_xms }} -Xmx{{ solr_xmx }}"
       volumes:
-          - alfresco-solr-data:/opt/alfresco-search-services/data          
+          - alfresco-solr-data:/opt/alfresco-search-services/data
       ports:
-          - 8083:8983 #Browser port    
+          - 8083:8983 #Browser port

@@ -140,7 +140,18 @@
     tags:
        - prep
        - docker-login
-       
+
+  - name: Upload 'alfresco' folder with Dockerfile
+    copy:
+      src: alfresco
+      dest: "/home/{{ansible_ssh_user}}"
+      owner: "{{ansible_ssh_user}}"
+      group: docker
+      mode: "u=rw,g=rw,o=r"
+    tags:
+       - prep
+       - docker-compose
+       - deploy
 
   - name: Upload docker-compose file
     template: 
