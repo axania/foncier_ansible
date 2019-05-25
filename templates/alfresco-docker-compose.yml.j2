@@ -1,9 +1,11 @@
 version: '3.3'
 
+{% if edms_data_disk is not defined %}
 volumes:
   alfresco-data:
   alfresco-db:
   alfresco-solr-data:
+{% endif %}
 
 services:
 {% if is_datadog_on_docker %}
@@ -49,7 +51,11 @@ services:
       ports:
           - 8380:8080 #Browser port
       volumes:
+{% if edms_data_disk is not defined %}
           - alfresco-data:/usr/local/tomcat/alf_data
+{% else %}
+          - {{ edms_data_disk }}/alfresco-data:/usr/local/tomcat/alf_data
+{% endif %}
       depends_on:
         - alfresco-share
         - alfresco-db
@@ -79,7 +85,11 @@ services:
           - PGDATA=/var/lib/postgresql/data/pgdata
     command: postgres -c max_connections=1000 -c log_min_messages=LOG
     volumes:
-      - alfresco-db:/var/lib/postgresql/data            
+{% if edms_data_disk is not defined %}
+      - alfresco-db:/var/lib/postgresql/data
+{% else %}
+      - {{ edms_data_disk }}/alfresco-db:/var/lib/postgresql/data
+{% endif %}
     ports:
       - "5436:5432"
 
@@ -98,6 +108,10 @@ services:
           #Set JVM memory values
           - "SOLR_JAVA_MEM=-Xms{{ solr_xms }} -Xmx{{ solr_xmx }}"
       volumes:
+{% if edms_data_disk is not defined %}
           - alfresco-solr-data:/opt/alfresco-search-services/data
+{% else %}
+          - {{ edms_data_disk }}/alfresco-solr-data:/opt/alfresco-search-services/data
+{% endif %}
       ports:
           - 8083:8983 #Browser port
