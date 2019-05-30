@@ -2,6 +2,9 @@ FROM alfresco/alfresco-content-repository-community:6.0.7-ga
 
 ARG TOMCAT_DIR=/usr/local/tomcat
 
+RUN localedef -c -f UTF-8 -i en_US en_US.UTF-8
+ENV LC_ALL en_US.UTF-8
+
 # Add configuration to alfresco-global.properties
 RUN echo -e '\n\
 attributes.propcleaner.cronExpression=0 0 3 ? * SAT\n\
