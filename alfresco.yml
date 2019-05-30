@@ -26,13 +26,15 @@
     tags:
        - prep
 
-  - apt_key:
+  - name: Add GPG key for Docker
+    apt_key:
       url: "https://download.docker.com/linux/ubuntu/gpg"
       state: present
     tags:
        - prep
 
-  - apt_repository:
+  - name: Add APT repo for Docker
+    apt_repository:
       repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable
       state: present
     tags:
@@ -43,7 +45,7 @@
     tags:
        - prep
 
-  - name: Installs GIT
+  - name: Install GIT
     apt:
       name: git
       state: present
@@ -51,7 +53,7 @@
     tags:
        - prep
 
-  - name: Installs docker-ce with the updated cache and repo
+  - name: Install docker-ce with the updated cache and repo
     apt:
       name: docker-ce={{ docker_ce_version }}
       state: present
@@ -66,23 +68,25 @@
     tags:
        - prep
 
-  - user:
+  - name: Add current user to Docker group
+    user:
       name: "{{ansible_ssh_user}}"
       group: docker
       append: yes
     tags:
        - prep
 
-  - user:
+  - name: Add 'dd-agent' user to Docker group
+    user:
       name: "dd-agent"
       group: docker
       append: yes
     when:
-      - datadog_installed  
+      - datadog_installed
     tags:
-       - prep
+      - prep
 
-  - name: Installs PIP
+  - name: Install PIP
     apt:
       name: python-pip
       state: present
@@ -91,17 +95,16 @@
        - prep
 
   - name: Upload certificates
-    copy: 
+    copy:
       src: "artifacts"
-      dest: "/"      
+      dest: "/"
       owner: "{{ansible_ssh_user}}"
       directory_mode: yes
       group: sudo
       mode: 0755
     tags:
        - prep
-       - ssl      
-      
+       - ssl
 
   - name: Install PIP Prerequisites
     apt: name={{ item }} state=latest
@@ -112,17 +115,17 @@
       - prep
       - pip
 
-
-  - name: Installing docker compose
+  - name: Install Docker Compose
     pip:
        name: docker-compose
        version: "{{ docker_compose_version if docker_compose_version else omit }}"
-       state: present    
+       state: present
     tags:
        - prep
        - docker-login
 
-  - docker_login:
+  - name: Log into Sogema JFrog Docker registry for current user
+    docker_login:
       registry: "{{docker_registry}}"
       username: "{{docker_user}}"
       password: "{{docker_pwd}}"
@@ -131,7 +134,8 @@
        - prep
        - docker-login
 
-  - docker_login:
+  - name: Log into Sogema JFrog Docker registry for '{{ansible_ssh_user}}' user
+    docker_login:
       config_path: "/home/{{ansible_ssh_user}}/.docker/config.json"
       registry: "{{docker_registry}}"
       username: "{{docker_user}}"
@@ -141,22 +145,35 @@
        - prep
        - docker-login
 
+  - name: Create Solr data folder with permissions to '1000' ('solr' inside container)
+    file:
+      path: "{{edms_data_disk}}/alfresco-solr-data"
+      owner: 1000
+      group: 1000
+      state: directory
+      recurse: yes
+    when: edms_data_disk is defined
+    tags:
+       - prep
+       - solr
+
   - name: Upload 'alfresco' folder with Dockerfile
     copy:
       src: alfresco
       dest: "/home/{{ansible_ssh_user}}"
       owner: "{{ansible_ssh_user}}"
-      group: docker
+      group: "docker"
       mode: "u=rw,g=rw,o=r"
     tags:
        - prep
        - docker-compose
        - deploy
 
+
   - name: Upload docker-compose file
-    template: 
+    template:
       src: ../templates/alfresco-docker-compose.yml.j2
-      dest: "/home/{{ansible_ssh_user}}/docker-compose.yml"      
+      dest: "/home/{{ansible_ssh_user}}/docker-compose.yml"
       owner: "{{ansible_ssh_user}}"
       group: docker
       mode: "u=rw,g=rw,o=r"
@@ -165,21 +182,24 @@
        - docker-compose
        - deploy
 
-  - docker_service:
+  - name: Run the 'down' command for Docker Compose
+    docker_service:
       project_name: "{{ansible_ssh_user}}"
-      project_src: /home/{{ansible_ssh_user}}      
+      project_src: /home/{{ansible_ssh_user}}
       state: absent
     tags:
        - deploy
 
-  - docker_service:
+  - name: Run the 'up' command for Docker Compose
+    docker_service:
       project_name: "{{ansible_ssh_user}}"
-      project_src: /home/{{ansible_ssh_user}}      
+      project_src: /home/{{ansible_ssh_user}}
       state: present
       pull: "{{ pull_images if pull_images else omit }}"
       services: "{{ available_docker_services }}"
     tags:
        - deploy
+
 
   - name: Wait for port 8380 to become open on the host, don't start checking for 10 seconds
     wait_for:
@@ -194,7 +214,6 @@
     shell: "curl --user {{edms_admin_user}}:{{edms_admin_password}} -H 'Content-Type: application/json' -X POST --data '{\"userName\": \"{{ edms_user }}\", \"firstName\": \"{{edms_user_first_name}}\", \"lastName\": \"{{edms_user_last_name}}\", \"email\": \"{{ edms_user }}\", \"password\":\"{{ edms_password }}\",\"groups\":[\"GROUP_ALFRESCO_ADMINISTRATORS\",\"GROUP_ALFRESCO_MODEL_ADMINISTRATORS\",\"GROUP_ALFRESCO_SEARCH_ADMINISTRATORS\"]}' {{ edms_host }}/alfresco/service/api/people;"
     tags:
        - creds
-
 
   - name: Alfresco set-up - Create site
     shell: "curl --user {{ edms_user }}:{{ edms_password }} -H 'Content-Type: application/json' -X POST --data '{\"id\": \"{{ edms_site_id }}\",\"title\": \"{{ edms_site_title }}\",\"description\": \"{{ edms_site_description }}\",\"visibility\": \"MODERATED\"}'  {{ edms_host }}/alfresco/api/-default-/public/alfresco/versions/1/sites;"
@@ -217,11 +236,7 @@
        - creds
 
 
-
   roles:
     - { role: soplakanets.hosts }
-    - { role: ypsman.resolv } 
-    - { role: sogema.filebeat,  when: is_docker_prospector_enabled } 
-
-      
-  
+    - { role: ypsman.resolv }
+    - { role: sogema.filebeat,  when: is_docker_prospector_enabled }
