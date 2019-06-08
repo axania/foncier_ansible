@@ -65,6 +65,11 @@ services:
       restart: always
       image: alfresco/alfresco-share:6.0.b
       environment:
+
+{% if edms_csrf_filter_referer is defined %}
+          - CSRF_FILTER_REFERER={{ edms_csrf_filter_referer }}
+{% endif %}
+
 {% if edms_csrf_filter_origin is defined %}
           - CSRF_FILTER_ORIGIN={{ edms_csrf_filter_origin }}
 {% endif %}
