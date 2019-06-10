@@ -15,8 +15,7 @@ This repo contains the ansible playbook (scripts) for a complete installation of
 ### Artifacts ###
 
 * 'certs' folder contains self-signed certificate files used by Nginx (for **foncier-ui** service).
-* 'java'  folder contains a truststore replacement (for **foncier-api** service) with the addition of 'pp-ml-foncier.sogematech.com' certificate.
-* 'pp-ml-foncier.sogematech.com.pem' file is the certificate within PP-ML environment (for **haproxy** service).
+* 'java'  folder contains a truststore replacement (for **foncier-api** service) with the addition of 'pp-ml-foncier.sogematech.com' and 'STAR_dndc.gouv.ml' certificates.
 
 ### How to set up ###
 

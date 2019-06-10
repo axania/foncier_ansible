@@ -1,7 +1,9 @@
 version: '3.3'
 
+{% if 'foncier-db' in available_docker_services and foncier_data_disk is not defined %}
 volumes:
   postgres:
+{% endif %}
 
 # Define the services/containers to be run
 services:
@@ -24,18 +26,27 @@ services:
       DD_PROCESS_AGENT_ENABLED: "{{ dd_process_agent_enabled }}"
 {% endif %}
 
+{% if 'foncier-ui' in available_docker_services %}
   foncier-ui:
     restart: always
     image: sogema-docker.jfrog.io/sogema/foncier-ui:{{ foncier_ui_image_version }}
     ports:
       - "4200:4200"
     environment:
-      - API_URL=foncier-api:8280
-      - WORKFLOW_URL=foncier-wf:8080
+      - API_URL={{ api_host }}:{{ api_port }}
+      - WORKFLOW_URL={{ camunda_host }}:{{ camunda_port }}
+{% if 'foncier-api' in available_docker_services or 'foncier-wf' in available_docker_services %}
     depends_on:
-      - foncier-api        
+{% if 'foncier-api' in available_docker_services %}
+      - foncier-api
+{% endif %}
+{% if 'foncier-wf' in available_docker_services %}
       - foncier-wf
+{% endif %}
+{% endif %}
+{% endif %}
 
+{% if 'foncier-wf' in available_docker_services %}
   foncier-wf:
     restart: always
     image: sogema-docker.jfrog.io/sogema/foncier-wf:{{ foncier_wf_image_version }}
@@ -51,7 +62,9 @@ services:
       - ./custom-config/web.xml:/camunda/webapps/engine-rest/WEB-INF/web.xml
       - ./custom-config/keycloak.json:/camunda/webapps/engine-rest/WEB-INF/keycloak.json
       - ./custom-config/context.xml:/camunda/webapps/engine-rest/META-INF/context.xml
+{% endif %}
 
+{% if 'foncier-api' in available_docker_services %}
   foncier-api:
     restart: always
     image: sogema-docker.jfrog.io/sogema/foncier-api:{{ foncier_api_image_version }}
@@ -107,23 +120,32 @@ services:
       LOGS_LEVEL: {{logs_level}}
     volumes:
       - /artifacts/java/cacerts:/etc/ssl/certs/java/cacerts
+{% if 'foncier-wf' in available_docker_services %}
     depends_on:
       - foncier-wf
+{% endif %}
+{% endif %}
 
+{% if 'foncier-db' in available_docker_services %}
   foncier-db:
-    image: postgres:10.4-alpine
     restart: always
-    volumes:
-      - postgres:/var/lib/postgresql/data
+    image: postgres:10.4-alpine
     ports:
-      - "5432:5432"      
+      - "5432:5432"
     environment:
       POSTGRES_USER: "{{ db_user }}"
       POSTGRES_PASSWORD: "{{ db_pass }}"
-      POSTGRES_DB: "{{ db_name }}"    
+      POSTGRES_DB: "{{ db_name }}"
       PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+{% if foncier_data_disk is not defined %}
+      - postgres:/var/lib/postgresql/data
+{% else %}
+      - {{ foncier_data_disk }}/postgres:/var/lib/postgresql/data
+{% endif %}
+{% endif %}
 
-{% if is_foncier_rules_api_enabled %}   
+{% if 'foncier-rules-api' in available_docker_services %}
   foncier-rules-api:
     restart: always
     image: sogema-docker.jfrog.io/sogema/foncier-rules-api:{{foncier_rules_api_image_version}}
@@ -140,4 +162,4 @@ services:
       interval: 1m30s
       timeout: 10s
       retries: 3    
-{% endif %}        
+{% endif %}

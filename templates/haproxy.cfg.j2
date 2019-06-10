@@ -7,15 +7,17 @@ global
 defaults
     option httplog
     timeout connect 10s
-    timeout client 30s
-    timeout server 30s
+    timeout client 120s
+    timeout server 120s
     log global
 
 frontend lb
     mode http
     bind *:80
+{% if pem_artifact is defined %}
     bind *:443 ssl crt /artifacts/{{ pem_artifact }}
     redirect scheme https if !{ ssl_fc }
+{% endif %}
     log-format %ci:%cp\ [%t]\ %ft\ %b/%s\ %Tq/%Tw/%Tc/%Tr/%Tt\ %ST\ %B\ %CC\ %CS\ %tsc\ %ac/%fc/%bc/%sc/%rc\ %sq/%bq\ %hr\ %hs\ %{+Q}r\ %ID
 
     # Configuration of headers for Keycloak

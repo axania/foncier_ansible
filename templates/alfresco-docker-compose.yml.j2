@@ -2,12 +2,19 @@ version: '3.3'
 
 {% if edms_data_disk is not defined %}
 volumes:
+{% if alfresco in available_docker_services %}
   alfresco-data:
+{% endif %}
+{% if alfresco-db in available_docker_services %}
   alfresco-db:
+{% endif %}
+{% if alfresco-solr6 in available_docker_services %}
   alfresco-solr-data:
+{% endif %}
 {% endif %}
 
 services:
+
 {% if is_datadog_on_docker %}
   datadog:
     restart: always
@@ -25,7 +32,8 @@ services:
       DD_HOSTNAME: "{{ full_hostname }}"
       DD_PROCESS_AGENT_ENABLED: "{{ dd_process_agent_enabled }}"
 {% endif %}
-   
+
+{% if 'alfresco' in available_docker_services %}
   alfresco:
       restart: always
       #image: alfresco/alfresco-content-repository-community:6.0.7-ga
@@ -35,15 +43,15 @@ services:
           JAVA_OPTS : "
               -Ddb.driver=org.postgresql.Driver
               -Ddb.username=alfresco
-              -Ddb.password=alfresco
-              -Ddb.url=jdbc:postgresql://alfresco-db:5432/alfresco
+              -Ddb.password={{ edms_db_pass }}
+              -Ddb.url=jdbc:postgresql://{{ edms_db_host }}:{{ edms_db_port }}/alfresco
               -Ddb.pool.max=975
               -Dindex.subsystem.name=solr6
-              -Dsolr.host=alfresco-solr6
-              -Dsolr.port=8983
+              -Dsolr.host={{ solr_host }}
+              -Dsolr.port={{ solr_port }}
               -Dsolr.secureComms=none
               -Dsolr.base.url=/solr
-              -Dshare.host={{ share_host }}
+              -Dshare.host={{ alfresco_host }}
               -Ddeployment.method=DOCKER_COMPOSE
               -Dcsrf.filter.enabled=false
               -Xms{{ alfresco_xms }} -Xmx{{ alfresco_xmx }}
@@ -58,9 +66,15 @@ services:
 {% endif %}
       depends_on:
         - alfresco-share
+{% if 'alfresco-db' in available_docker_services %}
         - alfresco-db
+{% endif %}
+{% if 'alfresco-solr6' in available_docker_services %}
         - alfresco-solr6
-      
+{% endif %}
+{% endif %}
+
+{% if 'alfresco-share' in available_docker_services %}
   alfresco-share:
       restart: always
       image: alfresco/alfresco-share:6.0.b
@@ -78,13 +92,15 @@ services:
           - "CATALINA_OPTS= -Xms{{ share_xms }} -Xmx{{ share_xmx }}"
       ports:
           - 8080:8080
+{% endif %}
 
+{% if 'alfresco-db' in available_docker_services %}
   alfresco-db:
     restart: always
     image: postgres:10.1
     restart: always
     environment:
-          - POSTGRES_PASSWORD=alfresco
+          - POSTGRES_PASSWORD={{ edms_db_pass }}
           - POSTGRES_USER=alfresco
           - POSTGRES_DB=alfresco
           - PGDATA=/var/lib/postgresql/data/pgdata
@@ -97,16 +113,18 @@ services:
 {% endif %}
     ports:
       - "5436:5432"
+{% endif %}
 
+{% if 'alfresco-solr6' in available_docker_services %}
   alfresco-solr6:
       restart: always
       image: alfresco/alfresco-search-services:1.1.1
       environment:
           #Solr needs to know how to register itself with Alfresco
-          - SOLR_ALFRESCO_HOST=alfresco
-          - SOLR_ALFRESCO_PORT=8080
+          - SOLR_ALFRESCO_HOST={{ alfresco_host }}
+          - SOLR_ALFRESCO_PORT={{ alfresco_port }}
           #Alfresco needs to know how to call solr
-          - SOLR_SOLR_HOST=alfresco-solr6
+          - SOLR_SOLR_HOST={{ solr_host }}
           - SOLR_SOLR_PORT=8983
           #Create the default alfresco and archive cores
           - SOLR_CREATE_ALFRESCO_DEFAULTS=alfresco,archive
@@ -120,3 +138,4 @@ services:
 {% endif %}
       ports:
           - 8083:8983 #Browser port
+{% endif %}

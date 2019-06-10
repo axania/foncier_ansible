@@ -106,6 +106,20 @@
        - prep
        - ssl
 
+  - name: Create PEM artifact file
+    copy:
+      content: |
+        {{ pem_artifact_ssl_certificate }}
+        {{ pem_artifact_ssl_private_key }}
+      dest: "/artifacts/{{ pem_artifact }}"
+      owner: "{{ansible_ssh_user}}"
+      group: sudo
+      mode: 0755
+    when: "pem_artifact_ssl_certificate is defined"
+    tags:
+       - prep
+       - ssl
+
   - name: Install PIP Prerequisites
     apt: name={{ item }} state=latest
     with_items:

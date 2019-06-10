@@ -145,7 +145,7 @@
        - prep
        - docker-login
 
-  - name: Create custom config folder for Camunda + Keycloak
+  - name: Create custom config folder
     file:
       path: "/home/{{ansible_ssh_user}}/custom-config"
       state: directory
@@ -155,41 +155,38 @@
     tags:
        - config_folder
 
-  - name: Upload keycloak file for Camunda + Keycloak
+  - name: Upload keycloak file for Camunda
     template:
       src: ../templates/keycloak.json.j2
       dest: "/home/{{ansible_ssh_user}}/custom-config/keycloak.json"
       owner: "{{ansible_ssh_user}}"
       group: "docker"
       mode: "u=rw,g=rw,o=r"
-    when:
-      - is_keycloak_enabled
+    when: "'foncier-wf' in available_docker_services and is_keycloak_enabled"
     tags:
        - keycloak
        - config_folder
 
-  - name: Upload custom web.xml file for Camunda + Keycloak
+  - name: Upload custom web.xml file for Camunda
     template:
       src: ../templates/web.xml.j2
       dest: "/home/{{ansible_ssh_user}}/custom-config/web.xml"
       owner: "{{ansible_ssh_user}}"
       group: "docker"
       mode: "u=rw,g=rw,o=r"
-    when:
-      - is_keycloak_enabled
+    when: "'foncier-wf' in available_docker_services and is_keycloak_enabled"
     tags:
        - camunda
        - config_folder
 
-  - name: Upload custom context.xml file for Camunda + Keycloak
+  - name: Upload custom context.xml file for Camunda
     template:
       src: ../templates/context.xml.j2
       dest: "/home/{{ansible_ssh_user}}/custom-config/context.xml"
       owner: "{{ansible_ssh_user}}"
       group: "docker"
       mode: "u=rw,g=rw,o=r"
-    when:
-      - is_keycloak_enabled
+    when: "'foncier-wf' in available_docker_services and is_keycloak_enabled"
     tags:
        - camunda
        - config_folder
@@ -226,14 +223,14 @@
        - deploy
 
   - name: Create Foncier DB in its Postgres container
-    postgresql_db: name=ladm login_host={{db_host}} login_user={{db_user}} port={{db_port}} login_password={{db_pass}}
-    when: inventory_hostname == "data01"
+    postgresql_db: name={{db_name}} login_host={{db_host}} login_user={{db_user}} port={{db_port}} login_password={{db_pass}}
+    when: "'foncier-db' in available_docker_services"
     tags:
       - db
 
   - name: Create Camunda DB in its Postgres container
     postgresql_db: name=process-engine login_host={{db_host}} login_user={{db_user}} port={{db_port}} login_password={{db_pass}}
-    when: inventory_hostname == "data01"
+    when: "'foncier-db' in available_docker_services"
     tags:
       - db
 
