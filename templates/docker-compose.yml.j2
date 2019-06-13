@@ -118,6 +118,9 @@ services:
       RULES_ENDPOINTS_PARTY_MEMBER: {{rules_endpoints_party_member}}
       MALI_FOLIOS_PER_VOLUME: {{mali_folios_per_volume}}
       LOGS_LEVEL: {{logs_level}}
+      HIBERNATE_SHOW_SQL: '{{hibernate_show_sql}}'
+      KEYCLOAK_LOGS: {{keycloak_logs}}
+      SPRING_LOGS: {{spring_logs}}
     volumes:
       - /artifacts/java/cacerts:/etc/ssl/certs/java/cacerts
 {% if 'foncier-wf' in available_docker_services %}
