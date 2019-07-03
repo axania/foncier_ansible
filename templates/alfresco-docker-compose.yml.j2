@@ -115,6 +115,31 @@ services:
       - "5436:5432"
 {% endif %}
 
+{% if 'alfresco-db-backup' in available_docker_services %}
+  alfresco-db-backup:
+    restart: always
+    image: prodrigestivill/postgres-backup-local:10-alpine
+    ports:
+      - "8090:8080"
+    environment:
+      POSTGRES_HOST: alfresco-db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: alfresco
+      POSTGRES_USER: alfresco
+      POSTGRES_PASSWORD: {{ edms_db_pass }}
+      POSTGRES_EXTRA_OPTS: "-Z9"
+      SCHEDULE: "{{ backup_schedule }}"
+      BACKUP_KEEP_DAYS: {{ backup_keep_days }}
+      BACKUP_KEEP_WEEKS: {{ backup_keep_weeks }}
+      BACKUP_KEEP_MONTHS: {{ backup_keep_months }}
+      BACKUP_DIR: /backups
+      HEALTHCHECK_PORT: 8080
+    volumes:
+      - {{ backup_client_folder }}/alfresco-db-backup:/backups
+    depends_on:
+      - alfresco-db
+{% endif %}
+
 {% if 'alfresco-solr6' in available_docker_services %}
   alfresco-solr6:
       restart: always

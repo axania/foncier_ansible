@@ -149,6 +149,31 @@ services:
 {% endif %}
 {% endif %}
 
+{% if 'foncier-db-backup' in available_docker_services %}
+  foncier-db-backup:
+    restart: always
+    image: prodrigestivill/postgres-backup-local:10-alpine
+    ports:
+      - "8090:8080"
+    environment:
+      POSTGRES_HOST: foncier-db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: {{ db_name }},process-engine
+      POSTGRES_USER: {{ db_user }}
+      POSTGRES_PASSWORD: {{ db_pass }}
+      POSTGRES_EXTRA_OPTS: "-Z9"
+      SCHEDULE: "{{ backup_schedule }}"
+      BACKUP_KEEP_DAYS: {{ backup_keep_days }}
+      BACKUP_KEEP_WEEKS: {{ backup_keep_weeks }}
+      BACKUP_KEEP_MONTHS: {{ backup_keep_months }}
+      BACKUP_DIR: /backups
+      HEALTHCHECK_PORT: 8080
+    volumes:
+      - {{ backup_client_folder }}/foncier-db-backup:/backups
+    depends_on:
+      - foncier-db
+{% endif %}
+
 {% if 'foncier-rules-api' in available_docker_services %}
   foncier-rules-api:
     restart: always

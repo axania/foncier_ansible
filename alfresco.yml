@@ -157,6 +157,27 @@
        - prep
        - solr
 
+
+  - name: install nfs-common
+    apt:
+      pkg: nfs-common
+    when: "'alfresco-db-backup' in available_docker_services"
+    tags:
+      - nfs
+      - db
+
+  - name: mount nfs share to /mnt/backups
+    mount:
+      name: "{{ backup_client_folder }}"
+      src: "{{ backup_server_host }}:{{ backup_server_folder }}"
+      fstype: nfs
+      state: mounted
+    when: "'alfresco-db-backup' in available_docker_services"
+    tags:
+      - nfs
+      - db
+
+
   - name: Upload 'alfresco' folder with Dockerfile
     copy:
       src: alfresco

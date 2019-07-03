@@ -1,0 +1,46 @@
+---
+- hosts: backup
+  become: yes
+
+  vars:
+    resolv_searchpath: "{{ dns_resolv_searchpath }}"
+    resolv_dns_server: "{{ dns_server_list }}"
+    save_hosts: "{{ etc_save_hosts }}"
+
+  tasks:
+
+  - name: set timezone to "{{timezone}}"
+    timezone:
+      name: "{{timezone}}"
+    tags:
+       - prep
+
+
+  - name: install nfs-kernel-server
+    apt:
+      pkg: "nfs-kernel-server"
+
+  - name: change {{ backup_server_folder }} permissions
+    file:
+      path: "{{ backup_server_folder }}"
+      owner: "nobody"
+      group: "nogroup"
+
+  - name: add line in /etc/exports
+    lineinfile:
+      dest: "/etc/exports"
+      line: '{{ backup_server_folder }} {{ backup_allowed_subnet }}(rw,sync,no_subtree_check)'
+    notify: restart nfs-kernel-server
+
+
+  roles:
+    - { role: soplakanets.hosts }
+    - { role: ypsman.resolv }
+
+
+  handlers:
+    - name: restart nfs-kernel-server
+      service:
+        name: nfs-kernel-server
+        state: restarted
+
