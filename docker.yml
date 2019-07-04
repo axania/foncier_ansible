@@ -191,6 +191,18 @@
        - camunda
        - config_folder
 
+  - name: Upload custom bpm-platform.xml (engine config) for Camunda
+    template:
+      src: ../templates/bpm-platform.xml.j2
+      dest: "/home/{{ansible_ssh_user}}/custom-config/bpm-platform.xml"
+      owner: "{{ansible_ssh_user}}"
+      group: "docker"
+      mode: "u=rw,g=rw,o=r"
+    when: "'foncier-wf' in available_docker_services and is_keycloak_enabled"
+    tags:
+       - camunda
+       - config_folder
+
 
   - name: install nfs-common
     apt:

@@ -59,6 +59,7 @@ services:
       DB_PASSWORD: "{{ db_pass }}"
       WAIT_FOR: "{{ db_host }}:{{ db_port }}"
     volumes:
+      - ./custom-config/bpm-platform.xml:/camunda/conf/bpm-platform.xml
       - ./custom-config/web.xml:/camunda/webapps/engine-rest/WEB-INF/web.xml
       - ./custom-config/keycloak.json:/camunda/webapps/engine-rest/WEB-INF/keycloak.json
       - ./custom-config/context.xml:/camunda/webapps/engine-rest/META-INF/context.xml
