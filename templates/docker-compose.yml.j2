@@ -123,6 +123,9 @@ services:
       HIBERNATE_LOGS: {{hibernate_logs}}
       KEYCLOAK_LOGS: {{keycloak_logs}}
       SPRING_LOGS: {{spring_logs}}
+      SWAGGER_USERNAME: {{swagger_username}}
+      SWAGGER_PASSWORD: {{swagger_password}}
+      SWAGGER_ROLE: {{swagger_role}}
     volumes:
       - /artifacts/java/cacerts:/etc/ssl/certs/java/cacerts
 {% if 'foncier-wf' in available_docker_services %}
