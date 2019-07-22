@@ -2,13 +2,13 @@ version: '3.3'
 
 {% if edms_data_disk is not defined %}
 volumes:
-{% if alfresco in available_docker_services %}
+{% if 'alfresco' in available_docker_services %}
   alfresco-data:
 {% endif %}
-{% if alfresco-db in available_docker_services %}
+{% if 'alfresco-db' in available_docker_services %}
   alfresco-db:
 {% endif %}
-{% if alfresco-solr6 in available_docker_services %}
+{% if 'alfresco-solr6' in available_docker_services %}
   alfresco-solr-data:
 {% endif %}
 {% endif %}
