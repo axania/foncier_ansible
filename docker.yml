@@ -1,5 +1,5 @@
 ---
-- hosts: worker01
+- hosts: docker
   become: yes
 
   vars:
