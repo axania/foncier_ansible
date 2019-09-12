@@ -86,6 +86,41 @@
     tags:
       - prep
 
+  - name: Enable Journald persistence
+    ini_file:
+      dest: "/etc/systemd/journald.conf"
+      section: Journal
+      option: Storage
+      value: "persistent"
+    register: enable_journald_persistence
+    tags:
+       - prep
+
+  - name: Restart Journald service
+    service:
+      name: systemd-journald
+      state: restarted
+    when: enable_journald_persistence.changed
+    tags:
+       - prep
+
+  - name: Set Docker log driver
+    template:
+      src: ../templates/daemon.json.j2
+      dest: "/etc/docker/daemon.json"
+    when: docker_log_driver is defined
+    register: set_docker_log_driver
+    tags:
+       - prep
+
+  - name: Restart Docker service
+    service:
+      name: docker
+      state: restarted
+    when: set_docker_log_driver.changed
+    tags:
+       - prep
+
   - name: Install PIP
     apt:
       name: python-pip
