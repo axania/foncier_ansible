@@ -115,7 +115,7 @@
       owner: "{{ansible_ssh_user}}"
       group: sudo
       mode: 0755
-    when: "pem_artifact_ssl_certificate is defined"
+    when: "pem_artifact is defined"
     tags:
        - prep
        - ssl
