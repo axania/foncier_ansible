@@ -1,0 +1,68 @@
+version: '2'
+
+services:
+
+
+{% if is_datadog_on_docker %}
+  datadog:
+    restart: always
+    image: datadog/docker-dd-agent:latest
+    ports:
+      - "8125:8125/udp"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro 
+      - /proc/:/host/proc/:ro 
+      - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro 
+    environment:
+      API_KEY: "{{ dd_key }}"
+      SD_BACKEND: "docker"
+      TAGS: "environment:{{ environment_name }},role:docker,product:foncier"
+      DD_HOSTNAME: "{{ full_hostname }}"
+      DD_PROCESS_AGENT_ENABLED: "{{ dd_process_agent_enabled }}"
+{% endif %}
+
+
+
+  jasperserver-pro:
+    image: sogema-docker.jfrog.io/sogema/jasperserver-pro:7.2.0
+    
+    # expose port on the host
+    ports:
+      - {{jasper_http_port}}:8080
+      - 8443:8443
+    
+    # set depends on js_database Postgresql service
+    depends_on:
+      - jasperserver-pro-db
+    
+    # point to env file with key=value entries 
+    env_file: .env
+    
+    # setting following values here will override settings from env_file
+    environment:
+      - DB_HOST={{ jasper_db_host }}
+      - JRS_LOAD_SAMPLES=false
+
+    volumes:
+      - ./jrs-license:/usr/local/share/jasperserver-pro/license 
+    mem_limit: 3g
+    mem_reservation: 1g
+    cpu_shares: 256
+ 
+  jasperserver-pro-db:
+    image: postgres:10
+    env_file: .env
+    ports:
+      - "5432:5432"    
+    volumes:
+{% if jasper_data_disk is not defined %}
+      - postgres-10-data:/var/lib/postgresql/data
+{% else %}
+      - {{ jasper_data_disk }}/postgres:/var/lib/postgresql/data
+{% endif %}      
+
+
+{% if foncier_data_disk is not defined %}
+volumes:
+  postgres-10-data:
+{% endif %} 

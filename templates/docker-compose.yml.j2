@@ -126,6 +126,17 @@ services:
       SWAGGER_USERNAME: {{swagger_username}}
       SWAGGER_PASSWORD: {{swagger_password}}
       SWAGGER_ROLE: {{swagger_role}}
+      SWAGGER_ENABLE: '{{swagger_enable}}'
+      JASPER_SERVER: {{jasper_server}}
+      JASPER_PORT: {{jasper_port}}
+      JASPER_USER: {{jasper_user}}
+      JASPER_PASSWORD: {{jasper_password}}
+      JASPER_PROTOCOL: {{jasper_protocol}}
+      WORKFLOW_URL: {{workflow_url}}
+      SIGTAS_BASEURL: {{sigtas_baseurl}}
+      SIGTAS_UI_DOMAIN: {{sigtas_ui_domain}}
+      SIGTAS_UI_PATH: {{sigtas_ui_path}}
+      USER_GUIDE_URL: {{user_guide_url}}
     volumes:
       - /artifacts/java/cacerts:/etc/ssl/certs/java/cacerts
 {% if 'foncier-wf' in available_docker_services %}
