@@ -136,7 +136,9 @@ services:
       SIGTAS_BASEURL: {{sigtas_baseurl}}
       SIGTAS_UI_DOMAIN: {{sigtas_ui_domain}}
       SIGTAS_UI_PATH: {{sigtas_ui_path}}
+      SIGTAS_LINKS: '{{sigtas_links}}'
       USER_GUIDE_URL: {{user_guide_url}}
+      
     volumes:
       - /artifacts/java/cacerts:/etc/ssl/certs/java/cacerts
 {% if 'foncier-wf' in available_docker_services %}
